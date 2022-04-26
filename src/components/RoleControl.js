@@ -1,63 +1,201 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import ReactLoading from 'react-loading';
+
 import {
   Container,
   Navbar,
   Nav,
-  NavDropdown,
   Form,
-  FormControl,
   Button,
   ButtonGroup,
   Modal,
-  ModalTitle,
 } from 'react-bootstrap';
-import RoleItem from './RoleItem.jsx';
-import userService from '../services/user.service.js';
+import PerItem from './PerItem.jsx';
+
+const ROLE_API = 'https://62642ce498095dcbf92c71ce.mockapi.io/api/';
 
 function RoleControl() {
-  const [show, setShow] = useState(false);
-  const [showUpdate, setShowUpdate] = useState(false);
-  const [showAdd, setShowAdd] = useState(false);
+  const [showAddRole, setShowAddRole] = useState(false);
+  const [showMofifyRole, setShowModifyRole] = useState(false);
+  const [deleteRole, setDeleteRole] = useState(false);
+  const [showAddPer, setShowAddPer] = useState(false);
+  const [showUpdatePer, setShowUpdatePer] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
 
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  // Name of Role when select dropdown
+  const [roleName, setRoleName] = useState('');
+  // New Role's name when change the input in add new modal
+  const [newRole, setNewRole] = useState('');
+  // New permission wanna Add to Database
+  const [newPer, setNewPer] = useState('');
 
-  const handleCloseUpdate = () => setShowUpdate(false);
-  const handleShowUpdate = () => setShowUpdate(true);
+  // All role datas from API
+  const [roleData, setRoleData] = useState();
+  // All Permission datas from API
+  const [perDatas, setPerDatas] = useState();
+  // Permission List of selected Role
+  // const [perLists, setPerLists] = useState();
 
-  const handleCloseAdd = () => setShowAdd(false);
-  const handleShowAdd = () => setShowAdd(true);
+  // ID of permission want to delete
+  const [perID, setPerID] = useState();
 
+  // Get all Role from API
+  const getRole = async () => {
+    try {
+      const res = await axios.get(ROLE_API + 'roles');
+      setRoleData(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // Get all Permission from API
+  const getPers = async () => {
+    try {
+      const res = await axios.get(ROLE_API + 'permission');
+      setPerDatas(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // Get all roles data when mount
   useEffect(() => {
-    // userService.createUser();
+    getRole();
+    getPers();
   }, []);
+
+  // Add New Role func
+  const createRole = (role, current) => {
+    return axios
+      .post(ROLE_API + 'roles', {
+        name: role,
+      })
+      .then((res) => {
+        getRole();
+        toast.success('Successfully Added Role!');
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error('Failed Add Role!');
+      });
+  };
+  const handleAddNewRole = () => {
+    createRole(newRole);
+    setShowAddRole(false);
+  };
+
+  // Add new permission to current role
+  const createPer = (name) => {
+    return axios
+      .post(ROLE_API + 'permission', {
+        name: name,
+      })
+      .then((res) => {
+        getPers();
+        toast.success('Successfully Added Permission!');
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error('Failed Add Permission!');
+      });
+  };
+  const handleAddNewPer = () => {
+    createPer(newPer);
+    setShowAddPer(false);
+  };
+
+  // Delete Role  func
+  const deleteRoler = (id) => {
+    axios
+      .delete(`${ROLE_API}roles/${id}`)
+      .then(() => {
+        getRole();
+        toast.success('Deleted Role!');
+      })
+      .catch((err) => {
+        toast.error('Failed to Delete!');
+        console.log(err);
+      });
+  };
+  const handleDeleteRole = () => {
+    deleteRoler(roleData.find((role) => role.name === roleName).id);
+    setDeleteRole(false);
+  };
+
+  // Delete a Permission
+  const deletePermission = (id) => {
+    axios
+      .delete(`${ROLE_API}permission/${id}`)
+      .then(() => {
+        getPers();
+        toast.success('Deleted Permission!');
+      })
+      .catch((err) => {
+        toast.error('Failed to Permission!');
+        console.log(err);
+      });
+  };
+  const handleDeletePermission = () => {
+    deletePermission(perID);
+    setShowDelete(false);
+  };
+
+  // Checkbox checked
+  const checkPermission = () => {
+    let role_perList = roleData.find((role) => role.name === roleName).perList;
+
+    let result = role_perList.find((item) => {
+      if (item.per === 'create') {
+        return true;
+      } else return false;
+    });
+
+    console.log('result:', result);
+  };
 
   return (
     <div className='role-container' style={{ height: '1000px' }}>
+      <ToastContainer autoClose={3000} />
       <Container fluid>
         <Navbar
           bg='light'
           className='d-flex align-items-center justify-content-around '
         >
+          {/* Role Body */}
           <Container fluid>
             <Navbar.Toggle aria-controls='navbarScroll' />
             <Navbar.Brand href='#'>ROLE:</Navbar.Brand>
             <Navbar.Collapse id='navbarScroll'>
               <Nav className='me-auto my-2 ' navbarScroll>
-                <Form.Select aria-label='Default select example'>
-                  <option>Admin Role</option>
-                  <option value='1'>One</option>
-                  <option value='2'>Two</option>
-                  <option value='3'>Three</option>
+                <Form.Select
+                  aria-label='Default select example'
+                  onChange={(e) => setRoleName(e.target.value)}
+                >
+                  <option>Choose your Role</option>
+                  {roleData &&
+                    roleData.map((role, i) => (
+                      <option key={i} value={role.name}>
+                        {role.name}
+                      </option>
+                    ))}
                 </Form.Select>
               </Nav>
 
               <ButtonGroup>
-                <Button variant='outline-success' onClick={handleShowAdd}>
+                <Button
+                  variant='outline-success'
+                  onClick={() => setShowAddRole(true)}
+                >
                   Add
                 </Button>
-                <Button variant='outline-success' onClick={handleShowUpdate}>
-                  Modify
+                <Button
+                  variant='outline-success'
+                  onClick={() => setDeleteRole(true)}
+                >
+                  Delete
                 </Button>
               </ButtonGroup>
             </Navbar.Collapse>
@@ -65,76 +203,43 @@ function RoleControl() {
         </Navbar>
       </Container>
 
-      <Container>
-        <p>PERMISSION</p>
-        <Button onClick={handleShowAdd}>Add Permission</Button>
+      {/* Permission Boy */}
+      <Container className='mt-4'>
+        <p>PERMISSION LISTS:</p>
+        <Button onClick={() => setShowAddPer(true)}>Add Permission</Button>
+        <Button className='m-2' onClick={checkPermission}>
+          Check
+        </Button>
 
-        <Form className='mb-3'>
-          <RoleItem handleShow={handleShow} />
+        <Form className='my-3'>
+          {perDatas ? (
+            perDatas.map((per, i) => {
+              return (
+                <PerItem
+                  key={i}
+                  per={per}
+                  setShowDelete={setShowDelete}
+                  setShowUpdatePer={setShowUpdatePer}
+                  setPerID={setPerID}
+                  checkPermission={checkPermission}
+                />
+              );
+            })
+          ) : (
+            <>
+              <h2>Data is Fetching...</h2>
+              <ReactLoading type='spin' color='#000' />
+            </>
+          )}
 
-          <Form.Group className='d-flex align-items-center justify-content-between py-2'>
-            <Form.Check type='checkbox' label='Update' />
-            <ButtonGroup>
-              <Button className='me-2' onClick={handleShow}>
-                <i className='fa-solid fa-trash'></i>
-              </Button>
-              <Button>
-                <i className='fa-solid fa-up-right-from-square'></i>
-              </Button>
-            </ButtonGroup>
-          </Form.Group>
-
-          <Form.Group className='d-flex align-items-center justify-content-between py-2'>
-            <Form.Check type='checkbox' label='Delete' />
-            <ButtonGroup>
-              <Button className='me-2' onClick={handleShow}>
-                <i className='fa-solid fa-trash'></i>
-              </Button>
-              <Button>
-                <i className='fa-solid fa-up-right-from-square'></i>
-              </Button>
-            </ButtonGroup>
-          </Form.Group>
-
-          <Form.Group className='d-flex align-items-center justify-content-between py-2'>
-            <Form.Check type='checkbox' label='Fetch' />
-            <ButtonGroup>
-              <Button className='me-2' onClick={handleShow}>
-                <i className='fa-solid fa-trash'></i>
-              </Button>
-              <Button>
-                <i className='fa-solid fa-up-right-from-square'></i>
-              </Button>
-            </ButtonGroup>
-          </Form.Group>
-
-          <Button>SAVE</Button>
+          <Button className='mt-3'>SAVE</Button>
         </Form>
       </Container>
 
       {/* Modal */}
       <Container>
-        {/* Delete modal */}
-        <Modal show={show} onHide={handleClose} className='delete-modal'>
-          <Modal.Header closeButton>
-            <Modal.Title>Khoan dừng khoảng chừng là 2s !</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            Are you sure you want to remove this permission?
-          </Modal.Body>
-
-          <Modal.Footer>
-            <Button variant='secondary' onClick={handleClose}>
-              Cancle
-            </Button>
-            <Button variant='primary' onClick={handleClose}>
-              Delete
-            </Button>
-          </Modal.Footer>
-        </Modal>
-
-        {/* Update modal */}
-        <Modal show={showUpdate} onHide={handleCloseUpdate}>
+        {/* Modify Role's name modal */}
+        <Modal show={showMofifyRole} onHide={() => setShowModifyRole(false)}>
           <Modal.Header closeButton>
             <Modal.Title>Modal Update</Modal.Title>
           </Modal.Header>
@@ -144,26 +249,29 @@ function RoleControl() {
                 className='mb-3'
                 controlId='exampleForm.ControlInput1'
               >
-                <Form.Label>Permission</Form.Label>
+                <Form.Label>Your New Role name</Form.Label>
                 <Form.Control type='text' defaultValue='Create' autoFocus />
               </Form.Group>
             </Form>
           </Modal.Body>
-          <Modal.Title>Noitice: Apply Update on all other Roles?</Modal.Title>
+          {/* <Modal.Title>Noitice: Apply Update on all other Roles?</Modal.Title> */}
           <Modal.Footer>
-            <Button variant='secondary' onClick={handleCloseUpdate}>
+            <Button
+              variant='secondary'
+              onClick={() => setShowModifyRole(false)}
+            >
               Close
             </Button>
-            <Button variant='primary' onClick={handleCloseUpdate}>
+            <Button variant='primary' onClick={() => setShowModifyRole(false)}>
               Update
             </Button>
           </Modal.Footer>
         </Modal>
 
-        {/* Edit Role Modal */}
+        {/* Add New Role Modal */}
         <Modal
-          show={showAdd}
-          onHide={handleCloseAdd}
+          show={showAddRole}
+          onHide={() => setShowAddRole(false)}
           animation
           centered
           enforceFocus
@@ -178,17 +286,128 @@ function RoleControl() {
                 controlId='exampleForm.ControlInput1'
               >
                 <Form.Label>Your Role</Form.Label>
-                <Form.Control type='text' autoFocus />
+                <Form.Control
+                  type='text'
+                  autoFocus
+                  onChange={(e) => setNewRole(e.target.value)}
+                />
               </Form.Group>
             </Form>
           </Modal.Body>
 
           <Modal.Footer>
-            <Button variant='secondary' onClick={handleCloseAdd}>
+            <Button variant='secondary' onClick={() => setShowAddRole(false)}>
               Close
             </Button>
-            <Button variant='primary' onClick={handleCloseAdd}>
+            <Button variant='primary' onClick={handleAddNewRole}>
               Add
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/* Delete Role Modal */}
+        <Modal
+          show={deleteRole}
+          onHide={() => setDeleteRole(false)}
+          className='delete-modal'
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Khoan dừng khoảng chừng là 2s !</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p>Are you sure to delete your Role?</p>
+            <p>Your data will delete permanently.</p>
+          </Modal.Body>
+
+          <Modal.Footer>
+            <Button variant='secondary' onClick={() => setDeleteRole(false)}>
+              Cancle
+            </Button>
+            <Button variant='primary' onClick={handleDeleteRole}>
+              Delete
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/* Add New Permission */}
+        <Modal
+          show={showAddPer}
+          onHide={() => setShowAddPer(false)}
+          animation
+          centered
+          enforceFocus
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Add New Permission</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group
+                className='mb-3'
+                controlId='exampleForm.ControlInput1'
+              >
+                <Form.Label>Permission Name</Form.Label>
+                <Form.Control
+                  type='text'
+                  autoFocus
+                  onChange={(e) => setNewPer(e.target.value)}
+                />
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+
+          <Modal.Footer>
+            <Button variant='secondary' onClick={() => setShowAddPer(false)}>
+              Close
+            </Button>
+            <Button variant='primary' onClick={handleAddNewPer}>
+              Add
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/* Modify Permission name */}
+        <Modal show={showUpdatePer} onHide={() => setShowUpdatePer(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Modify Permission Name</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group className='mb-3'>
+                <Form.Label>Permission</Form.Label>
+                <Form.Control type='text' defaultValue='' autoFocus />
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant='secondary' onClick={() => setShowUpdatePer(false)}>
+              Close
+            </Button>
+            <Button variant='primary' onClick={() => setShowUpdatePer(false)}>
+              Update
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/* Delete Permission Modal */}
+        <Modal
+          show={showDelete}
+          onHide={() => setShowDelete(false)}
+          className='delete-modal'
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Khoan dừng khoảng chừng là 2s !</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            Are you sure you want to remove this permission?
+          </Modal.Body>
+
+          <Modal.Footer>
+            <Button variant='secondary' onClick={() => setShowDelete(false)}>
+              Cancle
+            </Button>
+            <Button variant='primary' onClick={handleDeletePermission}>
+              Delete
             </Button>
           </Modal.Footer>
         </Modal>
