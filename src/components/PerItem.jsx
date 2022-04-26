@@ -1,13 +1,7 @@
 import React from 'react';
 import { Button, ButtonGroup, Form } from 'react-bootstrap';
 
-function PerItem({
-  setShowUpdatePer,
-  setShowDelete,
-  per,
-  setPerID,
-  checkPermission,
-}) {
+function PerItem({ setShowUpdatePer, setShowDelete, per, setPerID }) {
   return (
     <>
       <Form.Group
@@ -29,7 +23,12 @@ function PerItem({
           >
             <i className='fa-solid fa-trash'></i>
           </Button>
-          <Button onClick={() => setShowUpdatePer(true)}>
+          <Button
+            onClick={() => {
+              setShowUpdatePer(true);
+              setPerID(per.id);
+            }}
+          >
             <i className='fa-solid fa-up-right-from-square'></i>
           </Button>
         </ButtonGroup>

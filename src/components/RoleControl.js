@@ -41,6 +41,9 @@ function RoleControl() {
   // ID of permission want to delete
   const [perID, setPerID] = useState();
 
+  // New Permission's Name is Modified
+  const [modidyPer, setModifyPerName] = useState();
+
   // Get all Role from API
   const getRole = async () => {
     try {
@@ -143,6 +146,24 @@ function RoleControl() {
     setShowDelete(false);
   };
 
+  // Modify Permission Name
+  const modifyPerName = async (id, name) => {
+    try {
+      await axios.put(`${ROLE_API}permission/${id}`, {
+        name: name,
+      });
+      getPers();
+      toast.success('Modified Permission');
+    } catch (err) {
+      console.log(err);
+      toast.err('Modify Permission Failed');
+    }
+  };
+  const handleModifyPerName = () => {
+    modifyPerName(perID, modidyPer);
+    setShowUpdatePer(false);
+  };
+
   // Checkbox checked
   const checkPermission = () => {
     let role_perList = roleData.find((role) => role.name === roleName).perList;
@@ -158,11 +179,11 @@ function RoleControl() {
 
   return (
     <div className='role-container' style={{ height: '1000px' }}>
-      <ToastContainer autoClose={3000} />
+      <ToastContainer autoClose={3000} limit={1} theme='colored' />
       <Container fluid>
         <Navbar
-          bg='light'
-          className='d-flex align-items-center justify-content-around '
+          bg='primary'
+          className='d-flex align-items-center justify-content-around bg-opacity-508'
         >
           {/* Role Body */}
           <Container fluid>
@@ -289,7 +310,12 @@ function RoleControl() {
                 <Form.Control
                   type='text'
                   autoFocus
-                  onChange={(e) => setNewRole(e.target.value)}
+                  onChange={(e) => {
+                    if (e.target.value.trim() === '') {
+                      toast.warning('This field is required');
+                    }
+                    setNewRole(e.target.value);
+                  }}
                 />
               </Form.Group>
             </Form>
@@ -350,7 +376,12 @@ function RoleControl() {
                 <Form.Control
                   type='text'
                   autoFocus
-                  onChange={(e) => setNewPer(e.target.value)}
+                  onChange={(e) => {
+                    if (e.target.value.trim() === '') {
+                      toast.warning('This field is required');
+                    }
+                    setNewPer(e.target.value);
+                  }}
                 />
               </Form.Group>
             </Form>
@@ -374,8 +405,18 @@ function RoleControl() {
           <Modal.Body>
             <Form>
               <Form.Group className='mb-3'>
-                <Form.Label>Permission</Form.Label>
-                <Form.Control type='text' defaultValue='' autoFocus />
+                <Form.Label>New Permission Name</Form.Label>
+                <Form.Control
+                  type='text'
+                  defaultValue=''
+                  autoFocus
+                  onChange={(e) => {
+                    if (e.target.value.trim() === '') {
+                      toast.warning('This field is required');
+                    }
+                    setModifyPerName(e.target.value);
+                  }}
+                />
               </Form.Group>
             </Form>
           </Modal.Body>
@@ -383,7 +424,7 @@ function RoleControl() {
             <Button variant='secondary' onClick={() => setShowUpdatePer(false)}>
               Close
             </Button>
-            <Button variant='primary' onClick={() => setShowUpdatePer(false)}>
+            <Button variant='primary' onClick={handleModifyPerName}>
               Update
             </Button>
           </Modal.Footer>
