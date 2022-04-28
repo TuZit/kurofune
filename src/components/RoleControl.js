@@ -15,6 +15,7 @@ import {
 import PerItem from './PerItem.jsx';
 
 const ROLE_API = 'https://62642ce498095dcbf92c71ce.mockapi.io/api/';
+let isDisabled = false;
 
 function RoleControl() {
   const [showAddRole, setShowAddRole] = useState(false);
@@ -25,25 +26,39 @@ function RoleControl() {
   const [showDelete, setShowDelete] = useState(false);
 
   // Name of Role when select dropdown
-  const [roleName, setRoleName] = useState('');
+  const [roleName, setRoleName] = useState('Choose your Role');
   // New Role's name when change the input in add new modal
   const [newRole, setNewRole] = useState('');
   // New permission wanna Add to Database
   const [newPer, setNewPer] = useState('');
-
   // All role datas from API
   const [roleData, setRoleData] = useState();
   // All Permission datas from API
   const [perDatas, setPerDatas] = useState();
-  // Permission List of selected Role
-  // const [perLists, setPerLists] = useState();
 
+  // Current Role ID
+  const [roleID, setRoleID] = useState();
   // ID of permission want to delete
   const [perID, setPerID] = useState();
-
   // New Permission's Name is Modified
   const [modidyPer, setModifyPerName] = useState();
+  // Selected Role datas
+  const [selectedRole, setSelectedRole] = useState();
+  //New Permission List to save
+  const [newPerList, setNewPerList] = useState();
 
+  useEffect(() => {
+    const perBody = document.querySelector('.permission-body');
+    if (roleName === 'Choose your Role') {
+      perBody.style.display = 'none';
+    } else {
+      perBody.style.display = 'block';
+    }
+  }, [roleName]);
+
+  useEffect(() => {
+    isDisabled = true;
+  }, []);
   // Get all Role from API
   const getRole = async () => {
     try {
@@ -64,19 +79,19 @@ function RoleControl() {
     }
   };
 
-  // Get all roles data when mount
+  // Get all roles, permissions datas when mount
   useEffect(() => {
     getRole();
     getPers();
   }, []);
 
   // Add New Role func
-  const createRole = (role, current) => {
+  const createRole = (role) => {
     return axios
       .post(ROLE_API + 'roles', {
         name: role,
       })
-      .then((res) => {
+      .then(() => {
         getRole();
         toast.success('Successfully Added Role!');
       })
@@ -124,7 +139,7 @@ function RoleControl() {
       });
   };
   const handleDeleteRole = () => {
-    deleteRoler(roleData.find((role) => role.name === roleName).id);
+    deleteRoler(roleID);
     setDeleteRole(false);
   };
 
@@ -165,37 +180,62 @@ function RoleControl() {
   };
 
   // Checkbox checked
-  const checkPermission = () => {
-    let role_perList = roleData.find((role) => role.name === roleName).perList;
-
-    let result = role_perList.find((item) => {
-      if (item.per === 'create') {
-        return true;
-      } else return false;
-    });
-
-    console.log('result:', result);
+  const checkPermission = (perCheck) => {
+    // return selectedRole?.perList.includes(perCheck);
+    return selectedRole?.perIDList.includes(perCheck);
   };
 
+  // Save Permission
+  const savePerList = async (id, newPerList) => {
+    try {
+      axios.put(`${ROLE_API}roles/${id}`, {
+        perIDList: newPerList,
+      });
+      getPers();
+      toast.success('Successfully Save Permission!');
+    } catch (err) {
+      toast.error('Failed to save!');
+      console.log(err);
+    }
+  };
+  const handleSavePer = () => {
+    savePerList(roleID, newPerList);
+  };
+
+  console.log(newPerList);
+
   return (
-    <div className='role-container' style={{ height: '1000px' }}>
+    <div className='role-container'>
       <ToastContainer autoClose={3000} limit={1} theme='colored' />
       <Container fluid>
         <Navbar
           bg='primary'
-          className='d-flex align-items-center justify-content-around bg-opacity-508'
+          className='d-flex align-items-center justify-content-around bg-opacity-50'
         >
           {/* Role Body */}
           <Container fluid>
             <Navbar.Toggle aria-controls='navbarScroll' />
             <Navbar.Brand href='#'>ROLE:</Navbar.Brand>
             <Navbar.Collapse id='navbarScroll'>
-              <Nav className='me-auto my-2 ' navbarScroll>
+              <Nav className='me-auto my-2 '>
                 <Form.Select
-                  aria-label='Default select example'
-                  onChange={(e) => setRoleName(e.target.value)}
+                  className='role-selecter'
+                  onChange={(e) => {
+                    setRoleName(e.target.value);
+                    setRoleID(
+                      roleData.find((role) => role.name === e.target.value).id
+                    );
+
+                    if (roleData) {
+                      setSelectedRole(
+                        roleData.find((role) => role.name === e.target.value)
+                      );
+                    }
+                  }}
                 >
-                  <option>Choose your Role</option>
+                  <option value='none' disabled={isDisabled}>
+                    Choose your Role
+                  </option>
                   {roleData &&
                     roleData.map((role, i) => (
                       <option key={i} value={role.name}>
@@ -225,13 +265,15 @@ function RoleControl() {
       </Container>
 
       {/* Permission Boy */}
-      <Container className='mt-4'>
-        <p>PERMISSION LISTS:</p>
-        <Button onClick={() => setShowAddPer(true)}>Add Permission</Button>
-        <Button className='m-2' onClick={checkPermission}>
-          Check
+      <Container className='my-4 permission-body' disabled={true}>
+        <Button
+          disabled={roleName === 'Choose your Role'}
+          onClick={() => setShowAddPer(true)}
+        >
+          Add Permission
         </Button>
 
+        <p className='mt-3'>PERMISSION LISTS:</p>
         <Form className='my-3'>
           {perDatas ? (
             perDatas.map((per, i) => {
@@ -242,7 +284,11 @@ function RoleControl() {
                   setShowDelete={setShowDelete}
                   setShowUpdatePer={setShowUpdatePer}
                   setPerID={setPerID}
+                  selectedRole={selectedRole}
                   checkPermission={checkPermission}
+                  roleID={roleID}
+                  getPers={getPers}
+                  setNewPerList={setNewPerList}
                 />
               );
             })
@@ -253,7 +299,9 @@ function RoleControl() {
             </>
           )}
 
-          <Button className='mt-3'>SAVE</Button>
+          <Button className='mt-3' onClick={handleSavePer}>
+            SAVE
+          </Button>
         </Form>
       </Container>
 
@@ -311,9 +359,9 @@ function RoleControl() {
                   type='text'
                   autoFocus
                   onChange={(e) => {
-                    if (e.target.value.trim() === '') {
-                      toast.warning('This field is required');
-                    }
+                    // if (e.target.value.trim() === '') {
+                    //   toast.warning('This field is required');
+                    // }
                     setNewRole(e.target.value);
                   }}
                 />
@@ -377,9 +425,9 @@ function RoleControl() {
                   type='text'
                   autoFocus
                   onChange={(e) => {
-                    if (e.target.value.trim() === '') {
-                      toast.warning('This field is required');
-                    }
+                    // if (e.target.value.trim() === '') {
+                    //   toast.warning('This field is required');
+                    // }
                     setNewPer(e.target.value);
                   }}
                 />
@@ -411,9 +459,9 @@ function RoleControl() {
                   defaultValue=''
                   autoFocus
                   onChange={(e) => {
-                    if (e.target.value.trim() === '') {
-                      toast.warning('This field is required');
-                    }
+                    // if (e.target.value.trim() === '') {
+                    //   toast.warning('This field is required');
+                    // }
                     setModifyPerName(e.target.value);
                   }}
                 />
