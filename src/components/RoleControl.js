@@ -32,20 +32,20 @@ function RoleControl() {
   // New permission wanna Add to Database
   const [newPer, setNewPer] = useState('');
   // All role datas from API
-  const [roleData, setRoleData] = useState();
+  const [roleData, setRoleData] = useState([]);
   // All Permission datas from API
-  const [perDatas, setPerDatas] = useState();
+  const [perDatas, setPerDatas] = useState([]);
 
   // Current Role ID
-  const [roleID, setRoleID] = useState();
+  const [roleID, setRoleID] = useState('');
   // ID of permission want to delete
-  const [perID, setPerID] = useState();
+  const [perID, setPerID] = useState('');
   // New Permission's Name is Modified
-  const [modidyPer, setModifyPerName] = useState();
+  const [modidyPer, setModifyPerName] = useState('');
   // Selected Role datas
   const [selectedRole, setSelectedRole] = useState();
   //New Permission List to save
-  const [newPerList, setNewPerList] = useState();
+  const [newPerList, setNewPerList] = useState([]);
 
   useEffect(() => {
     const perBody = document.querySelector('.permission-body');
@@ -58,7 +58,7 @@ function RoleControl() {
 
   useEffect(() => {
     isDisabled = true;
-  }, []);
+  }, [roleID]);
   // Get all Role from API
   const getRole = async () => {
     try {
@@ -182,7 +182,9 @@ function RoleControl() {
   // Checkbox checked
   const checkPermission = (perCheck) => {
     // return selectedRole?.perList.includes(perCheck);
-    return selectedRole?.perIDList.includes(perCheck);
+    return selectedRole?.perIDList.find((item) => item === perCheck)
+      ? true
+      : false;
   };
 
   // Save Permission
@@ -192,6 +194,7 @@ function RoleControl() {
         perIDList: newPerList,
       });
       getPers();
+      getRole();
       toast.success('Successfully Save Permission!');
     } catch (err) {
       toast.error('Failed to save!');
@@ -199,11 +202,13 @@ function RoleControl() {
     }
   };
   const handleSavePer = () => {
-    savePerList(roleID, newPerList);
+    savePerList(roleID, selectedRole?.perIDList);
   };
 
-  console.log(newPerList);
+  console.log(roleData);
 
+  // console.log(selectedRole);
+  // console.log(newPerList);
   return (
     <div className='role-container'>
       <ToastContainer autoClose={3000} limit={1} theme='colored' />
@@ -289,6 +294,7 @@ function RoleControl() {
                   roleID={roleID}
                   getPers={getPers}
                   setNewPerList={setNewPerList}
+                  setSelectedRole={setSelectedRole}
                 />
               );
             })

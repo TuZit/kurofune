@@ -9,30 +9,29 @@ function PerItem({
   checkPermission,
   selectedRole,
   setNewPerList,
+  setSelectedRole,
 }) {
   let perIDList = selectedRole?.perIDList;
 
-  const handleCheckBox = (e) => {
-    if (e.target.checked === true) {
-      perIDList.push(per.id);
-      perIDList = Array.from(new Set(perIDList));
-      setNewPerList(perIDList);
+  const handleCheckBox = (e, id) => {
+    if (e.target.checked) {
+      setSelectedRole({
+        ...selectedRole,
+        perIDList: [...selectedRole?.perIDList, id],
+      });
+      // perIDList.push(per.id);
+      // perIDList = Array.from(new Set(perIDList));
+      // setNewPerList(perIDList);
     } else {
-      perIDList = perIDList.filter((item) => item !== per.id);
-      perIDList = Array.from(new Set(perIDList));
-      setNewPerList(perIDList);
+      // perIDList = perIDList.filter((item) => item !== per.id);
+      // perIDList = Array.from(new Set(perIDList));
+      // setNewPerList(perIDList);
+      setSelectedRole({
+        ...selectedRole,
+        perIDList: selectedRole.perIDList.filter((item) => item !== id),
+      });
     }
   };
-  // let arr = ['a', 'b'];
-  // const handleCheckBox = (e) => {
-  //   let { value, checked } = e.target;
-  //   if (checked === true) {
-  //     arr.push(value);
-  //     console.log('checked:', arr);
-  //   }
-  // };
-
-  const [id, setId] = useState();
 
   return (
     <>
@@ -43,18 +42,12 @@ function PerItem({
         >
           <Form.Check
             type='checkbox'
-            defaultChecked={checkPermission(per.id)}
+            checked={checkPermission(per.id)}
             label={per.name}
             value={per.id}
-            // onChange={(e) => {
-            //   handleCheckBox(e);
-            // }}
-            // onClick={(e) => {
-            //   if (e.target.checked === false) {
-            //     arr = arr.filter((x) => x !== per.id);
-            //     console.log('ko check:', arr);
-            //   }
-            // }}
+            onChange={(e) => {
+              handleCheckBox(e, per.id);
+            }}
           />
           <ButtonGroup>
             <Button
