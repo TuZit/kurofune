@@ -43,7 +43,7 @@ const Register = () => {
       // createUser(values);
       register(values);
       console.log('dcm');
-      // navigate("/");
+      navigate('/');
     },
   });
 
