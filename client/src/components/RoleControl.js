@@ -12,8 +12,13 @@ import {
   Modal,
 } from 'react-bootstrap';
 import PerItem from './PerItem.jsx';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { loginActions } from '../store/loginSlice.js';
 
 function RoleControl() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [showAddRole, setShowAddRole] = useState(false);
   const [showMofifyRole, setShowModifyRole] = useState(false);
   const [deleteRole, setDeleteRole] = useState(false);
@@ -165,6 +170,15 @@ function RoleControl() {
                   onClick={() => setDeleteRole(true)}
                 >
                   Delete
+                </Button>
+                <Button
+                  variant='outline-success'
+                  onClick={() => {
+                    dispatch(loginActions.logout());
+                    navigate('/login');
+                  }}
+                >
+                  Log Out
                 </Button>
               </ButtonGroup>
             </Navbar.Collapse>
