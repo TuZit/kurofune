@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import ReactLoading from 'react-loading';
-
+import roleService from '../services/role.service.js';
 import {
   Container,
   Navbar,
@@ -14,7 +13,6 @@ import {
 } from 'react-bootstrap';
 import PerItem from './PerItem.jsx';
 
-const ROLE_API = 'https://62642ce498095dcbf92c71ce.mockapi.io/api/';
 let isDisabled = false;
 
 function RoleControl() {
@@ -44,8 +42,6 @@ function RoleControl() {
   const [modidyPer, setModifyPerName] = useState('');
   // Selected Role datas
   const [selectedRole, setSelectedRole] = useState();
-  //New Permission List to save
-  const [newPerList, setNewPerList] = useState([]);
 
   useEffect(() => {
     const perBody = document.querySelector('.permission-body');
@@ -56,162 +52,81 @@ function RoleControl() {
     }
   }, [roleName]);
 
-  useEffect(() => {
-    isDisabled = true;
-  }, [roleID]);
-  // Get all Role from API
-  const getRole = async () => {
-    try {
-      const res = await axios.get(ROLE_API + 'roles');
-      setRoleData(res.data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  // Get all Permission from API
-  const getPers = async () => {
-    try {
-      const res = await axios.get(ROLE_API + 'permission');
-      setPerDatas(res.data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  // useEffect(() => {
+  //   isDisabled = true;
+  // }, [roleID]);
 
   // Get all roles, permissions datas when mount
   useEffect(() => {
-    getRole();
-    getPers();
-  }, []);
+    roleService.getRole(setRoleData);
+    roleService.getPers(setPerDatas);
+  }, [roleID]);
 
   // Add New Role func
-  const createRole = (role) => {
-    return axios
-      .post(ROLE_API + 'roles', {
-        name: role,
-      })
-      .then(() => {
-        getRole();
-        toast.success('Successfully Added Role!');
-      })
-      .catch((err) => {
-        console.log(err);
-        toast.error('Failed Add Role!');
-      });
-  };
   const handleAddNewRole = () => {
-    createRole(newRole);
-    setShowAddRole(false);
+    const roleNameList = roleData.map((role) => role.name);
+    if (newRole.trim() === '') {
+      toast.warning('This filed id required!');
+      return;
+    }
+    if (roleNameList.includes(newRole)) {
+      toast.warning('Role Name Already Exists!');
+      return;
+    } else {
+      roleService.createRole(newRole, toast, setRoleData);
+      setShowAddRole(false);
+    }
   };
 
   // Add new permission to current role
-  const createPer = (name) => {
-    return axios
-      .post(ROLE_API + 'permission', {
-        name: name,
-      })
-      .then((res) => {
-        getPers();
-        toast.success('Successfully Added Permission!');
-      })
-      .catch((err) => {
-        console.log(err);
-        toast.error('Failed Add Permission!');
-      });
-  };
   const handleAddNewPer = () => {
-    createPer(newPer);
+    if (newPer.trim() === '') {
+      toast.warning('This filed id required!');
+      return;
+    }
+    roleService.createPer(newPer, toast, setPerDatas);
     setShowAddPer(false);
   };
 
-  // Delete Role  func
-  const deleteRoler = (id) => {
-    axios
-      .delete(`${ROLE_API}roles/${id}`)
-      .then(() => {
-        getRole();
-        toast.success('Deleted Role!');
-      })
-      .catch((err) => {
-        toast.error('Failed to Delete!');
-        console.log(err);
-      });
-  };
+  // Delete Role func
   const handleDeleteRole = () => {
-    deleteRoler(roleID);
+    roleService.deleteRoler(roleID, toast, setRoleData);
     setDeleteRole(false);
   };
 
   // Delete a Permission
-  const deletePermission = (id) => {
-    axios
-      .delete(`${ROLE_API}permission/${id}`)
-      .then(() => {
-        getPers();
-        toast.success('Deleted Permission!');
-      })
-      .catch((err) => {
-        toast.error('Failed to Permission!');
-        console.log(err);
-      });
-  };
   const handleDeletePermission = () => {
-    deletePermission(perID);
+    roleService.deletePermission(perID, toast, setPerDatas);
     setShowDelete(false);
   };
 
   // Modify Permission Name
-  const modifyPerName = async (id, name) => {
-    try {
-      await axios.put(`${ROLE_API}permission/${id}`, {
-        name: name,
-      });
-      getPers();
-      toast.success('Modified Permission');
-    } catch (err) {
-      console.log(err);
-      toast.err('Modify Permission Failed');
-    }
-  };
   const handleModifyPerName = () => {
-    modifyPerName(perID, modidyPer);
+    roleService.modifyPerName(perID, modidyPer, toast, setPerDatas);
     setShowUpdatePer(false);
   };
 
   // Checkbox checked
   const checkPermission = (perCheck) => {
-    // return selectedRole?.perList.includes(perCheck);
     return selectedRole?.perIDList.find((item) => item === perCheck)
       ? true
       : false;
   };
 
   // Save Permission
-  const savePerList = async (id, newPerList) => {
-    try {
-      axios.put(`${ROLE_API}roles/${id}`, {
-        perIDList: newPerList,
-      });
-      getPers();
-      getRole();
-      toast.success('Successfully Save Permission!');
-    } catch (err) {
-      toast.error('Failed to save!');
-      console.log(err);
-    }
-  };
   const handleSavePer = () => {
-    savePerList(roleID, selectedRole?.perIDList);
+    roleService.savePerList(
+      roleID,
+      selectedRole?.perIDList,
+      toast,
+      setPerDatas,
+      setRoleData
+    );
   };
 
-  console.log(roleData);
-
-  // console.log(selectedRole);
-  // console.log(newPerList);
   return (
     <div className='role-container'>
-      <ToastContainer autoClose={3000} limit={1} theme='colored' />
+      <ToastContainer autoClose={1500} limit={1} theme='colored' />
       <Container fluid>
         <Navbar
           bg='primary'
@@ -292,8 +207,7 @@ function RoleControl() {
                   selectedRole={selectedRole}
                   checkPermission={checkPermission}
                   roleID={roleID}
-                  getPers={getPers}
-                  setNewPerList={setNewPerList}
+                  getPers={roleService.getPers}
                   setSelectedRole={setSelectedRole}
                 />
               );
@@ -459,7 +373,7 @@ function RoleControl() {
           <Modal.Body>
             <Form>
               <Form.Group className='mb-3'>
-                <Form.Label>New Permission Name</Form.Label>
+                <Form.Label>Permission Name</Form.Label>
                 <Form.Control
                   type='text'
                   defaultValue=''

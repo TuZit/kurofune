@@ -1,38 +1,123 @@
 import axios from 'axios';
 const ROLE_API = 'https://62642ce498095dcbf92c71ce.mockapi.io/api/';
 
-const getRole = async () => {
+// Get all Role from API
+const getRole = async (setRoleData) => {
   try {
-    const res = await axios.get(ROLE_API);
-    return res.data;
+    const res = await axios.get(ROLE_API + 'roles');
+    setRoleData(res.data);
   } catch (err) {
     console.log(err);
   }
 };
 
-const createRole = (permission) => {
+// Get all Permission from API
+const getPers = async (setPerDatas) => {
+  try {
+    const res = await axios.get(ROLE_API + 'permission');
+    setPerDatas(res.data);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// Add New Role func
+const createRole = (role, toast, setRoleData) => {
   return axios
-    .post(ROLE_API, {
-      per: permission,
+    .post(ROLE_API + 'roles', {
+      name: role,
     })
-    .then((res) => console.log(res.data))
-    .catch((err) => console.log(err));
+    .then(() => {
+      getRole(setRoleData);
+      toast.success('Successfully Added Role!');
+    })
+    .catch((err) => {
+      console.log(err);
+      toast.error('Failed Add Role!');
+    });
 };
 
-const deleteRole = (id) => {
-  axios.delete(`${ROLE_API}/${id}`);
+// Add new permission to current role
+const createPer = (name, toast, setPerDatas) => {
+  return axios
+    .post(ROLE_API + 'permission', {
+      name: name,
+    })
+    .then((res) => {
+      getPers(setPerDatas);
+      toast.success('Successfully Added Permission!');
+    })
+    .catch((err) => {
+      console.log(err);
+      toast.error('Failed Add Permission!');
+    });
 };
 
-const updateRole = (role, id) => {
-  axios.put(`${ROLE_API}/${id}`, {
-    ...role,
-  });
+// Delete Role func
+const deleteRoler = (id, toast, setRoleData) => {
+  axios
+    .delete(`${ROLE_API}roles/${id}`)
+    .then(() => {
+      getRole(setRoleData);
+      toast.success('Deleted Role!');
+    })
+    .catch((err) => {
+      toast.error('Failed to Delete!');
+      console.log(err);
+    });
+};
+
+// Delete a Permission
+const deletePermission = (id, toast, setPerDatas) => {
+  axios
+    .delete(`${ROLE_API}permission/${id}`)
+    .then(() => {
+      getPers(setPerDatas);
+      toast.success('Deleted Permission!');
+    })
+    .catch((err) => {
+      toast.error('Failed to Permission!');
+      console.log(err);
+    });
+};
+
+// Modify Permission Name
+const modifyPerName = async (id, name, toast, setPerDatas) => {
+  try {
+    await axios.put(`${ROLE_API}permission/${id}`, {
+      name: name,
+    });
+    getPers(setPerDatas);
+    toast.success('Modified Permission');
+  } catch (err) {
+    console.log(err);
+    toast.err('Modify Permission Failed');
+  }
+};
+
+// Save Permission
+const savePerList = async (id, newPerList, toast, setRoleData) => {
+  try {
+    await axios.put(`${ROLE_API}roles/${id}`, {
+      perIDList: newPerList,
+    });
+    getRole(setRoleData);
+    toast.success('Successfully Save Permission!');
+  } catch (err) {
+    toast.error('Failed to save!');
+    console.log(err);
+  }
 };
 
 const roleService = {
   getRole,
+  getPers,
   createRole,
-  deleteRole,
+  createPer,
+  deleteRoler,
+  deletePermission,
+  modifyPerName,
+  savePerList,
 };
 
 export default roleService;
