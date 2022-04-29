@@ -13,8 +13,6 @@ import {
 } from 'react-bootstrap';
 import PerItem from './PerItem.jsx';
 
-let isDisabled = false;
-
 function RoleControl() {
   const [showAddRole, setShowAddRole] = useState(false);
   const [showMofifyRole, setShowModifyRole] = useState(false);
@@ -43,19 +41,6 @@ function RoleControl() {
   // Selected Role datas
   const [selectedRole, setSelectedRole] = useState();
 
-  useEffect(() => {
-    const perBody = document.querySelector('.permission-body');
-    if (roleName === 'Choose your Role') {
-      perBody.style.display = 'none';
-    } else {
-      perBody.style.display = 'block';
-    }
-  }, [roleName]);
-
-  // useEffect(() => {
-  //   isDisabled = true;
-  // }, [roleID]);
-
   // Get all roles, permissions datas when mount
   useEffect(() => {
     roleService.getRole(setRoleData);
@@ -65,15 +50,17 @@ function RoleControl() {
   // Add New Role func
   const handleAddNewRole = () => {
     const roleNameList = roleData.map((role) => role.name);
+
     if (newRole.trim() === '') {
       toast.warning('This filed id required!');
       return;
     }
+
     if (roleNameList.includes(newRole)) {
       toast.warning('Role Name Already Exists!');
       return;
     } else {
-      roleService.createRole(newRole, toast, setRoleData);
+      roleService.createRole(newRole, toast, setRoleData, setSelectedRole);
       setShowAddRole(false);
     }
   };
@@ -140,6 +127,7 @@ function RoleControl() {
               <Nav className='me-auto my-2 '>
                 <Form.Select
                   className='role-selecter'
+                  value={selectedRole?.name || ''}
                   onChange={(e) => {
                     setRoleName(e.target.value);
                     setRoleID(
@@ -153,7 +141,7 @@ function RoleControl() {
                     }
                   }}
                 >
-                  <option value='none' disabled={isDisabled}>
+                  <option value='none' hidden>
                     Choose your Role
                   </option>
                   {roleData &&

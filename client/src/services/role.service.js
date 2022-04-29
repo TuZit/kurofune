@@ -22,35 +22,57 @@ const getPers = async (setPerDatas) => {
 };
 
 // Add New Role func
-const createRole = (role, toast, setRoleData) => {
-  return axios
-    .post(ROLE_API + 'roles', {
+const createRole = async (role, toast, setRoleData, setSelectedRole) => {
+  try {
+    const res = await axios.post(ROLE_API + 'roles', {
       name: role,
-    })
-    .then(() => {
-      getRole(setRoleData);
-      toast.success('Successfully Added Role!');
-    })
-    .catch((err) => {
-      console.log(err);
-      toast.error('Failed Add Role!');
     });
+    setSelectedRole(res.data);
+    getRole(setRoleData);
+    toast.success('Successfully Added Role!');
+  } catch (err) {
+    console.log(err);
+    toast.error('Failed Add Role!');
+  }
+  // return axios
+  //   .post(ROLE_API + 'roles', {
+  //     name: role,
+  //   })
+  //   .then(() => {
+  //     getRole(setRoleData);
+  //     toast.success('Successfully Added Role!');
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //     toast.error('Failed Add Role!');
+  //   });
 };
 
 // Add new permission to current role
-const createPer = (name, toast, setPerDatas) => {
-  return axios
-    .post(ROLE_API + 'permission', {
+const createPer = async (name, toast, setPerDatas, setRoleID) => {
+  try {
+    const res = await axios.post(ROLE_API + 'permission', {
       name: name,
-    })
-    .then((res) => {
-      getPers(setPerDatas);
-      toast.success('Successfully Added Permission!');
-    })
-    .catch((err) => {
-      console.log(err);
-      toast.error('Failed Add Permission!');
     });
+    setRoleID(res.data.id);
+    getPers(setPerDatas);
+    toast.success('Successfully Added Permission!');
+  } catch (err) {
+    console.log(err);
+    toast.error('Failed Add Permission!');
+  }
+  // return axios
+  //   .post(ROLE_API + 'permission', {
+  //     name: name,
+  //   })
+  //   .then((res) => {
+  //     getPers(setPerDatas);
+  //     toast.success('Successfully Added Permission!');
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //     toast.error('Failed Add Permission!');
+  //   });
 };
 
 // Delete Role func
