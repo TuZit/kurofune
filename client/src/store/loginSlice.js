@@ -1,9 +1,11 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 const loginSlice = createSlice({
-  name: "login",
+  name: 'login',
   initialState: {
     isLogged: false,
+    loginRedirect: false,
+    registerRedirect: false,
   },
   reducers: {
     login(state, action) {
@@ -13,6 +15,8 @@ const loginSlice = createSlice({
       state.isLogged = false;
       localStorage.clear();
     },
+    loginRedirect(state) {},
+    registerRedirect(state) {},
   },
 });
 

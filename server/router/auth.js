@@ -1,19 +1,18 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const User = require("../models/User");
-const argon2 = require("argon2");
-const jwt = require("jsonwebtoken");
-
+const User = require('../models/User');
+const argon2 = require('argon2');
+const jwt = require('jsonwebtoken');
 
 // @router POST api/auth/register
 // @description register user
 // @access Public
-router.post("/register", async (req, res) => {
+router.post('/register', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res
       .status(400)
-      .json({ success: false, message: "Missing username and/or password" });
+      .json({ success: false, message: 'Missing username and/or password' });
   } else {
     try {
       //check for existing user
@@ -21,7 +20,7 @@ router.post("/register", async (req, res) => {
       if (user) {
         return res
           .status(400)
-          .json({ success: false, message: "Username already taken" });
+          .json({ success: false, message: 'Username already taken' });
       } else {
         // All good
         const hasPassword = await argon2.hash(password);
@@ -35,7 +34,7 @@ router.post("/register", async (req, res) => {
         );
         res.json({
           success: true,
-          message: "User created successfully",
+          message: 'User created successfully',
           accessToken,
         });
       }
@@ -43,7 +42,7 @@ router.post("/register", async (req, res) => {
       console.log(error);
       res
         .status(500)
-        .json({ success: false, message: "Internal server error", error });
+        .json({ success: false, message: 'Internal server error', error });
     }
   }
 });
@@ -52,12 +51,12 @@ router.post("/register", async (req, res) => {
 // @description Login user
 // @access Public
 
-router.post("/login", async (req, res) => {
+router.post('/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res
       .status(400)
-      .json({ success: false, message: "Missing username and/or password" });
+      .json({ success: false, message: 'Missing username and/or password' });
   } else {
     try {
       // check for existing user
@@ -65,14 +64,14 @@ router.post("/login", async (req, res) => {
       if (!existingUser) {
         return res
           .status(400)
-          .json({ success: false, message: "Incorrect Username or password" });
+          .json({ success: false, message: 'Incorrect Username or password' });
       } else {
         // User found
         const passwordHash = argon2.verify(existingUser.password, password);
         if (!passwordHash) {
           return res
             .status(400)
-            .json({ success: false, message: "Password Incorrect" });
+            .json({ success: false, message: 'Password Incorrect' });
         } else {
           // Return token
           const accessToken = jwt.sign(
@@ -81,7 +80,7 @@ router.post("/login", async (req, res) => {
           );
           res.json({
             success: true,
-            message: "User login successfully",
+            message: 'User login successfully',
             accessToken,
           });
         }
@@ -90,7 +89,7 @@ router.post("/login", async (req, res) => {
       console.log(error);
       res
         .status(500)
-        .json({ success: false, message: "Internal server error", error });
+        .json({ success: false, message: 'Internal server error', error });
     }
   }
 });
