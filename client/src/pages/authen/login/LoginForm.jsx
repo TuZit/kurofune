@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 
 import './style.scss';
 import { loginActions } from '../../../store/loginSlice.js';
@@ -31,8 +31,7 @@ function LoginForm({ setRedirectPart }) {
       dispatch(loginActions.login());
       navigate('/');
     } catch (err) {
-      toast.error('User Name/ Password Incorrect');
-      console.log(err);
+      toast.error(err.response.data.message);
     }
   };
 

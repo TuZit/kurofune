@@ -14,7 +14,7 @@ function AuthLayout() {
       <div className='layout-left'>
         <img
           src='https://pharma.its-globaltek.com/wp-content/themes/pharmacy/assets/imgs/bg_login-register.jpg'
-          alt=''
+          alt='logo'
         ></img>
       </div>
       <div className='layout-right'>

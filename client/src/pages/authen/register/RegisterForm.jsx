@@ -5,11 +5,14 @@ import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useDispatch } from 'react-redux';
+import { loginActions } from '../../../store/loginSlice.js';
 
 import './register.scss';
 
 function RegisterForm({ setRedirectPart }) {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const formik = useFormik({
     initialValues: {
@@ -64,10 +67,11 @@ function RegisterForm({ setRedirectPart }) {
           accessToken: res.data.accessToken,
         })
       );
+      dispatch(loginActions.login());
       navigate('/');
       toast.success('Đăng ký thành công !');
     } catch (err) {
-      console.log(err);
+      toast.error(err.response.data.message);
     }
   };
 
