@@ -1,40 +1,22 @@
 import axios from 'axios';
 const POST_API = 'http://localhost:5000/api/v1/post';
 
-const getAllPosts = async () => {
-  try {
-    const res = await axios.get(POST_API + '/all');
-    return res.data;
-  } catch (err) {
-    console.log(err.response);
-  }
+const getAllPosts = () => {
+  return axios.get(POST_API + '/all');
 };
 
-const createPost = async (post) => {
-  try {
-    const res = await axios.post(POST_API + '/create', post);
-    return res.data;
-  } catch (err) {
-    console.log(err.response);
-  }
+const createPost = (post) => {
+  return axios
+    .post(POST_API + '/create', post)
+    .then((response) => response.data);
 };
 
-const updatePost = async (id, post) => {
-  try {
-    const res = await axios.put(POST_API + `/update/:${id}`, post);
-    return res.data;
-  } catch (err) {
-    console.log(err.response);
-  }
+const updatePost = (id, post) => {
+  return axios.put(POST_API + `/update/:${id}`, post).then((res) => res.data);
 };
 
 const deletePost = async (id) => {
-  try {
-    const res = await axios.delete(POST_API + `/delete/:${id}`);
-    return res.data;
-  } catch (err) {
-    console.log(err.response);
-  }
+  return axios.delete(POST_API + `/delete/${id}`).then((res) => res.data);
 };
 
 const postService = {

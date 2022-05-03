@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import postService from '../../services/post.service.js';
 
 function PostDashboard() {
@@ -9,9 +9,9 @@ function PostDashboard() {
   const [description, setDescription] = useState('');
   const [url, setUrl] = useState('');
   const [status, setStatus] = useState('');
-
+  const [ID, setPostID] = useState();
   if (post) {
-    console.log(post);
+    console.log(post.post);
   }
 
   // Get access Token from LocalStorage
@@ -32,8 +32,12 @@ function PostDashboard() {
 
   // Get all Posts from API
   const getAllPosts = async () => {
-    const data = await postService.getAllPosts();
-    setPost(data);
+    try {
+      const res = await postService.getAllPosts();
+      setPost(res.data);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   // Create new Post to save to API
@@ -44,8 +48,29 @@ function PostDashboard() {
       url,
       status,
     };
-    const res = await postService.createPost(inputPost);
-    toast.success(res.message);
+
+    try {
+      const res = await postService.createPost(inputPost);
+      toast.success(res.message);
+      getAllPosts();
+    } catch (err) {
+      toast.error(err.response.data.message);
+    }
+  };
+
+  // Delete a Post
+  const deletePost = async () => {
+    if (post) {
+      var expectPostID = post.post[ID]._id;
+    }
+
+    try {
+      const res = await postService.deletePost(expectPostID);
+      toast.success(res.message);
+      getAllPosts();
+    } catch (err) {
+      toast.error(err.response.data.message);
+    }
   };
 
   useEffect(() => {
@@ -54,6 +79,7 @@ function PostDashboard() {
 
   return (
     <div>
+      <ToastContainer theme='colored' limit={1} />
       <h1>PostDashboard</h1>
       <form
         onSubmit={(e) => {
@@ -83,6 +109,19 @@ function PostDashboard() {
 
         <button type='submit'>Send</button>
       </form>
+
+      <div style={{ marginTop: '40px' }}>
+        <label>Nhập số ID của Post muốn xoá</label>
+        <br />
+        <input
+          type='text'
+          onChange={(e) => {
+            setPostID(e.target.value);
+          }}
+        />
+        {/* <br /> */}
+        <button onClick={deletePost}>DELETE POST</button>
+      </div>
     </div>
   );
 }
