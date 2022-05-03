@@ -1,11 +1,10 @@
 import axios from 'axios';
 const POST_API = 'http://localhost:5000/api/v1/post';
 
-const getAllPosts = async (setPost) => {
+const getAllPosts = async () => {
   try {
     const res = await axios.get(POST_API + '/all');
-    // setPost(res.data);
-    console.log(res.data);
+    return res.data;
   } catch (err) {
     console.log(err.response);
   }
