@@ -15,9 +15,7 @@ function PostDashboard() {
   }
 
   // Get access Token from LocalStorage
-  const accessToken = JSON.parse(
-    localStorage.getItem('accessToken')
-  ).accessToken;
+  const accessToken = JSON.parse(localStorage.getItem('login')).accessToken;
 
   // Config Header Authorization before doing request
   axios.interceptors.request.use(

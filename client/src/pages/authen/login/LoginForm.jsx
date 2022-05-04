@@ -22,12 +22,14 @@ function LoginForm({ setRedirectPart }) {
         password,
       });
 
-      localStorage.setItem(
-        'accessToken',
-        JSON.stringify({
-          accessToken: res.data.accessToken,
-        })
-      );
+      // localStorage.setItem(
+      //   'accessToken',
+      //   JSON.stringify({
+      //     accessToken: res.data.accessToken,
+      //   })
+      // );
+
+      localStorage.setItem('login', JSON.stringify(res.data));
       dispatch(loginActions.login());
       navigate('/');
     } catch (err) {
@@ -101,15 +103,15 @@ function LoginForm({ setRedirectPart }) {
         </form>
 
         <div className='d-flex justify-content-center note'>
-          <Link
-            to='/signup'
+          <span
             onClick={(e) => {
               e.preventDefault();
-              setRedirectPart(false);
+              navigate('/auth/register');
+              // setRedirectPart(false);
             }}
           >
             Nếu chưa có tài khoản rồi thì đăng ký đi ? Ở đây này :v
-          </Link>
+          </span>
         </div>
       </div>
     </>

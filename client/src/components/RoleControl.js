@@ -1,24 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import ReactLoading from 'react-loading';
-import roleService from '../services/role.service.js';
+import React, { memo, useEffect, useState } from 'react';
 import {
-  Container,
-  Navbar,
-  Nav,
-  Form,
   Button,
   ButtonGroup,
+  Container,
+  Form,
   Modal,
+  Nav,
+  Navbar,
 } from 'react-bootstrap';
-import PerItem from './PerItem.jsx';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import ReactLoading from 'react-loading';
+import { useDispatch, useSelector } from 'react-redux';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import roleService from '../services/role.service.js';
 import { loginActions } from '../store/loginSlice.js';
+import PerItem from './PerItem.jsx';
 
 function RoleControl() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const isLogged = useSelector((state) => state.login.isLogged);
+
   const [showAddRole, setShowAddRole] = useState(false);
   const [showMofifyRole, setShowModifyRole] = useState(false);
   const [deleteRole, setDeleteRole] = useState(false);
@@ -48,8 +50,13 @@ function RoleControl() {
 
   // Get all roles, permissions datas when mount
   useEffect(() => {
-    roleService.getRole(setRoleData);
-    roleService.getPers(setPerDatas);
+    let isSubscribed = true;
+    if (isSubscribed) {
+      roleService.getRole(setRoleData);
+      roleService.getPers(setPerDatas);
+    }
+
+    return () => (isSubscribed = false);
   }, [roleID]);
 
   // Add New Role func
@@ -117,314 +124,325 @@ function RoleControl() {
   };
 
   return (
-    <div className='role-container'>
-      <ToastContainer autoClose={1500} limit={1} theme='colored' />
-      <Container fluid>
-        <Navbar
-          bg='primary'
-          className='d-flex align-items-center justify-content-around bg-opacity-50'
-        >
-          {/* Role Body */}
-          <Container fluid>
-            <Navbar.Toggle aria-controls='navbarScroll' />
-            <Navbar.Brand href='#'>ROLE:</Navbar.Brand>
-            <Navbar.Collapse id='navbarScroll'>
-              <Nav className='me-auto my-2 '>
-                <Form.Select
-                  className='role-selecter'
-                  value={selectedRole?.name || ''}
-                  onChange={(e) => {
-                    setRoleName(e.target.value);
-                    setRoleID(
-                      roleData.find((role) => role.name === e.target.value).id
-                    );
-
-                    if (roleData) {
-                      setSelectedRole(
-                        roleData.find((role) => role.name === e.target.value)
+    <>
+      <div className='role-container'>
+        <ToastContainer autoClose={1500} limit={1} theme='colored' />
+        <Container fluid>
+          <Navbar
+            className='d-flex align-items-center justify-content-around '
+            style={{ backgroundColor: '#62a19b' }}
+          >
+            {/* Role Body */}
+            <Container fluid>
+              <Navbar.Toggle aria-controls='navbarScroll' />
+              <Navbar.Brand href='#'>ROLE:</Navbar.Brand>
+              <Navbar.Collapse id='navbarScroll'>
+                <Nav className='me-auto my-2 '>
+                  <Form.Select
+                    className='role-selecter'
+                    value={selectedRole?.name || ''}
+                    onChange={(e) => {
+                      setRoleName(e.target.value);
+                      setRoleID(
+                        roleData.find((role) => role.name === e.target.value).id
                       );
-                    }
-                  }}
-                >
-                  <option value='none' hidden>
-                    Choose your Role
-                  </option>
-                  {roleData &&
-                    roleData.map((role, i) => (
-                      <option key={i} value={role.name}>
-                        {role.name}
-                      </option>
-                    ))}
-                </Form.Select>
-              </Nav>
 
-              <ButtonGroup>
-                <Button
-                  variant='outline-success'
-                  onClick={() => setShowAddRole(true)}
-                >
-                  Add
-                </Button>
-                <Button
-                  variant='outline-success'
-                  onClick={() => setDeleteRole(true)}
-                >
-                  Delete
-                </Button>
-                <Button
-                  variant='outline-success'
-                  onClick={() => {
-                    dispatch(loginActions.logout());
-                    navigate('/login');
-                  }}
-                >
-                  Log Out
-                </Button>
-              </ButtonGroup>
-            </Navbar.Collapse>
-          </Container>
-        </Navbar>
-      </Container>
+                      if (roleData) {
+                        setSelectedRole(
+                          roleData.find((role) => role.name === e.target.value)
+                        );
+                      }
+                    }}
+                  >
+                    <option value='none' hidden>
+                      Choose your Role
+                    </option>
+                    {roleData &&
+                      roleData.map((role, i) => (
+                        <option key={i} value={role.name}>
+                          {role.name}
+                        </option>
+                      ))}
+                  </Form.Select>
+                </Nav>
 
-      {/* Permission Boy */}
-      <Container className='my-4 permission-body' disabled={true}>
-        <Button
-          disabled={roleName === 'Choose your Role'}
-          onClick={() => setShowAddPer(true)}
-        >
-          Add Permission
-        </Button>
+                <ButtonGroup>
+                  <Button
+                    variant='outline-success'
+                    onClick={() => setShowAddRole(true)}
+                  >
+                    Add
+                  </Button>
+                  <Button
+                    variant='outline-success'
+                    onClick={() => setDeleteRole(true)}
+                  >
+                    Delete
+                  </Button>
+                  <Button
+                    variant='outline-success'
+                    onClick={() => {
+                      dispatch(loginActions.logout());
+                      navigate('/auth/login');
+                      // localStorage.setItem('isLogged', false);
+                    }}
+                  >
+                    Log Out
+                  </Button>
+                </ButtonGroup>
+              </Navbar.Collapse>
+            </Container>
+          </Navbar>
+        </Container>
 
-        <p className='mt-3'>PERMISSION LISTS:</p>
-        <Form className='my-3'>
-          {perDatas ? (
-            perDatas.map((per, i) => {
-              return (
-                <PerItem
-                  key={i}
-                  per={per}
-                  setShowDelete={setShowDelete}
-                  setShowUpdatePer={setShowUpdatePer}
-                  setPerID={setPerID}
-                  selectedRole={selectedRole}
-                  checkPermission={checkPermission}
-                  roleID={roleID}
-                  getPers={roleService.getPers}
-                  setSelectedRole={setSelectedRole}
-                />
-              );
-            })
-          ) : (
-            <>
-              <h2>Data is Fetching...</h2>
-              <ReactLoading type='spin' color='#000' />
-            </>
-          )}
-
-          <Button className='mt-3' onClick={handleSavePer}>
-            SAVE
+        {/* Permission Boy */}
+        <Container className='my-4 permission-body' disabled={true}>
+          <Button
+            disabled={roleName === 'Choose your Role'}
+            onClick={() => setShowAddPer(true)}
+          >
+            Add Permission
           </Button>
-        </Form>
-      </Container>
 
-      {/* Modal */}
-      <Container>
-        {/* Modify Role's name modal */}
-        <Modal show={showMofifyRole} onHide={() => setShowModifyRole(false)}>
-          <Modal.Header closeButton>
-            <Modal.Title>Modal Update</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <Form.Group
-                className='mb-3'
-                controlId='exampleForm.ControlInput1'
+          <p className='mt-3'>PERMISSION LISTS:</p>
+          <Form className='my-3'>
+            {perDatas ? (
+              perDatas.map((per, i) => {
+                return (
+                  <PerItem
+                    key={i}
+                    per={per}
+                    setShowDelete={setShowDelete}
+                    setShowUpdatePer={setShowUpdatePer}
+                    setPerID={setPerID}
+                    selectedRole={selectedRole}
+                    checkPermission={checkPermission}
+                    roleID={roleID}
+                    getPers={roleService.getPers}
+                    setSelectedRole={setSelectedRole}
+                  />
+                );
+              })
+            ) : (
+              <>
+                <h2>Data is Fetching...</h2>
+                <ReactLoading type='spin' color='#000' />
+              </>
+            )}
+
+            <Button className='mt-3' onClick={handleSavePer}>
+              SAVE
+            </Button>
+          </Form>
+        </Container>
+
+        {/* Modal */}
+        <Container>
+          {/* Modify Role's name modal */}
+          <Modal show={showMofifyRole} onHide={() => setShowModifyRole(false)}>
+            <Modal.Header closeButton>
+              <Modal.Title>Modal Update</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Form>
+                <Form.Group
+                  className='mb-3'
+                  controlId='exampleForm.ControlInput1'
+                >
+                  <Form.Label>Your New Role name</Form.Label>
+                  <Form.Control type='text' defaultValue='Create' autoFocus />
+                </Form.Group>
+              </Form>
+            </Modal.Body>
+            {/* <Modal.Title>Noitice: Apply Update on all other Roles?</Modal.Title> */}
+            <Modal.Footer>
+              <Button
+                variant='secondary'
+                onClick={() => setShowModifyRole(false)}
               >
-                <Form.Label>Your New Role name</Form.Label>
-                <Form.Control type='text' defaultValue='Create' autoFocus />
-              </Form.Group>
-            </Form>
-          </Modal.Body>
-          {/* <Modal.Title>Noitice: Apply Update on all other Roles?</Modal.Title> */}
-          <Modal.Footer>
-            <Button
-              variant='secondary'
-              onClick={() => setShowModifyRole(false)}
-            >
-              Close
-            </Button>
-            <Button variant='primary' onClick={() => setShowModifyRole(false)}>
-              Update
-            </Button>
-          </Modal.Footer>
-        </Modal>
-
-        {/* Add New Role Modal */}
-        <Modal
-          show={showAddRole}
-          onHide={() => setShowAddRole(false)}
-          animation
-          centered
-          enforceFocus
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>Add Role</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <Form.Group
-                className='mb-3'
-                controlId='exampleForm.ControlInput1'
+                Close
+              </Button>
+              <Button
+                variant='primary'
+                onClick={() => setShowModifyRole(false)}
               >
-                <Form.Label>Your Role</Form.Label>
-                <Form.Control
-                  type='text'
-                  autoFocus
-                  onChange={(e) => {
-                    // if (e.target.value.trim() === '') {
-                    //   toast.warning('This field is required');
-                    // }
-                    setNewRole(e.target.value);
-                  }}
-                />
-              </Form.Group>
-            </Form>
-          </Modal.Body>
+                Update
+              </Button>
+            </Modal.Footer>
+          </Modal>
 
-          <Modal.Footer>
-            <Button variant='secondary' onClick={() => setShowAddRole(false)}>
-              Close
-            </Button>
-            <Button variant='primary' onClick={handleAddNewRole}>
-              Add
-            </Button>
-          </Modal.Footer>
-        </Modal>
+          {/* Add New Role Modal */}
+          <Modal
+            show={showAddRole}
+            onHide={() => setShowAddRole(false)}
+            animation
+            centered
+            enforceFocus
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>Add Role</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Form>
+                <Form.Group
+                  className='mb-3'
+                  controlId='exampleForm.ControlInput1'
+                >
+                  <Form.Label>Your Role</Form.Label>
+                  <Form.Control
+                    type='text'
+                    autoFocus
+                    onChange={(e) => {
+                      // if (e.target.value.trim() === '') {
+                      //   toast.warning('This field is required');
+                      // }
+                      setNewRole(e.target.value);
+                    }}
+                  />
+                </Form.Group>
+              </Form>
+            </Modal.Body>
 
-        {/* Delete Role Modal */}
-        <Modal
-          show={deleteRole}
-          onHide={() => setDeleteRole(false)}
-          className='delete-modal'
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>Khoan dừng khoảng chừng là 2s !</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p>Are you sure to delete your Role?</p>
-            <p>Your data will delete permanently.</p>
-          </Modal.Body>
+            <Modal.Footer>
+              <Button variant='secondary' onClick={() => setShowAddRole(false)}>
+                Close
+              </Button>
+              <Button variant='primary' onClick={handleAddNewRole}>
+                Add
+              </Button>
+            </Modal.Footer>
+          </Modal>
 
-          <Modal.Footer>
-            <Button variant='secondary' onClick={() => setDeleteRole(false)}>
-              Cancle
-            </Button>
-            <Button variant='primary' onClick={handleDeleteRole}>
-              Delete
-            </Button>
-          </Modal.Footer>
-        </Modal>
+          {/* Delete Role Modal */}
+          <Modal
+            show={deleteRole}
+            onHide={() => setDeleteRole(false)}
+            className='delete-modal'
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>Khoan dừng khoảng chừng là 2s !</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <p>Are you sure to delete your Role?</p>
+              <p>Your data will delete permanently.</p>
+            </Modal.Body>
 
-        {/* Add New Permission */}
-        <Modal
-          show={showAddPer}
-          onHide={() => setShowAddPer(false)}
-          animation
-          centered
-          enforceFocus
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>Add New Permission</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <Form.Group
-                className='mb-3'
-                controlId='exampleForm.ControlInput1'
+            <Modal.Footer>
+              <Button variant='secondary' onClick={() => setDeleteRole(false)}>
+                Cancle
+              </Button>
+              <Button variant='primary' onClick={handleDeleteRole}>
+                Delete
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          {/* Add New Permission */}
+          <Modal
+            show={showAddPer}
+            onHide={() => setShowAddPer(false)}
+            animation
+            centered
+            enforceFocus
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>Add New Permission</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Form>
+                <Form.Group
+                  className='mb-3'
+                  controlId='exampleForm.ControlInput1'
+                >
+                  <Form.Label>Permission Name</Form.Label>
+                  <Form.Control
+                    type='text'
+                    autoFocus
+                    onChange={(e) => {
+                      // if (e.target.value.trim() === '') {
+                      //   toast.warning('This field is required');
+                      // }
+                      setNewPer(e.target.value);
+                    }}
+                  />
+                </Form.Group>
+              </Form>
+            </Modal.Body>
+
+            <Modal.Footer>
+              <Button variant='secondary' onClick={() => setShowAddPer(false)}>
+                Close
+              </Button>
+              <Button variant='primary' onClick={handleAddNewPer}>
+                Add
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          {/* Modify Permission name */}
+          <Modal show={showUpdatePer} onHide={() => setShowUpdatePer(false)}>
+            <Modal.Header closeButton>
+              <Modal.Title>Modify Permission Name</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Form>
+                <Form.Group className='mb-3'>
+                  <Form.Label>Permission Name</Form.Label>
+                  <Form.Control
+                    type='text'
+                    defaultValue=''
+                    autoFocus
+                    onChange={(e) => {
+                      // if (e.target.value.trim() === '') {
+                      //   toast.warning('This field is required');
+                      // }
+                      setModifyPerName(e.target.value);
+                    }}
+                  />
+                </Form.Group>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant='secondary'
+                onClick={() => setShowUpdatePer(false)}
               >
-                <Form.Label>Permission Name</Form.Label>
-                <Form.Control
-                  type='text'
-                  autoFocus
-                  onChange={(e) => {
-                    // if (e.target.value.trim() === '') {
-                    //   toast.warning('This field is required');
-                    // }
-                    setNewPer(e.target.value);
-                  }}
-                />
-              </Form.Group>
-            </Form>
-          </Modal.Body>
+                Close
+              </Button>
+              <Button variant='primary' onClick={handleModifyPerName}>
+                Update
+              </Button>
+            </Modal.Footer>
+          </Modal>
 
-          <Modal.Footer>
-            <Button variant='secondary' onClick={() => setShowAddPer(false)}>
-              Close
-            </Button>
-            <Button variant='primary' onClick={handleAddNewPer}>
-              Add
-            </Button>
-          </Modal.Footer>
-        </Modal>
+          {/* Delete Permission Modal */}
+          <Modal
+            show={showDelete}
+            onHide={() => setShowDelete(false)}
+            className='delete-modal'
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>Khoan dừng khoảng chừng là 2s !</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              Are you sure you want to remove this permission?
+            </Modal.Body>
 
-        {/* Modify Permission name */}
-        <Modal show={showUpdatePer} onHide={() => setShowUpdatePer(false)}>
-          <Modal.Header closeButton>
-            <Modal.Title>Modify Permission Name</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <Form.Group className='mb-3'>
-                <Form.Label>Permission Name</Form.Label>
-                <Form.Control
-                  type='text'
-                  defaultValue=''
-                  autoFocus
-                  onChange={(e) => {
-                    // if (e.target.value.trim() === '') {
-                    //   toast.warning('This field is required');
-                    // }
-                    setModifyPerName(e.target.value);
-                  }}
-                />
-              </Form.Group>
-            </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant='secondary' onClick={() => setShowUpdatePer(false)}>
-              Close
-            </Button>
-            <Button variant='primary' onClick={handleModifyPerName}>
-              Update
-            </Button>
-          </Modal.Footer>
-        </Modal>
+            <Modal.Footer>
+              <Button variant='secondary' onClick={() => setShowDelete(false)}>
+                Cancle
+              </Button>
+              <Button variant='primary' onClick={handleDeletePermission}>
+                Delete
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </Container>
+      </div>
 
-        {/* Delete Permission Modal */}
-        <Modal
-          show={showDelete}
-          onHide={() => setShowDelete(false)}
-          className='delete-modal'
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>Khoan dừng khoảng chừng là 2s !</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            Are you sure you want to remove this permission?
-          </Modal.Body>
-
-          <Modal.Footer>
-            <Button variant='secondary' onClick={() => setShowDelete(false)}>
-              Cancle
-            </Button>
-            <Button variant='primary' onClick={handleDeletePermission}>
-              Delete
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      </Container>
-    </div>
+      {/* {isLogged ? <div>aaaaa</div> : <Navigate to='/auth/login' />} */}
+    </>
   );
 }
 
-export default RoleControl;
+export default memo(RoleControl);

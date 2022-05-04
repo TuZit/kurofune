@@ -10,7 +10,7 @@ const verifyToken = (req, res, next) => {
   } else {
     try {
       const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN, {
-        expiresIn: 10 * 60 * 60 * 24 + 's',
+        expiresIn: 60 + 's',
       });
       req.userId = decodedToken.userID;
       next();

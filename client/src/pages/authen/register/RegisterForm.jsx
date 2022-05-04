@@ -166,15 +166,14 @@ function RegisterForm({ setRedirectPart }) {
         </form>
 
         <div className='d-flex justify-content-center note mt-3'>
-          <Link
-            to='/login'
+          <span
             onClick={(e) => {
               e.preventDefault();
-              setRedirectPart(true);
+              navigate('/auth/login');
             }}
           >
             Nếu có tài khoản rồi thì đăng nhập đi ? Ở đây này :v
-          </Link>
+          </span>
         </div>
       </div>
     </>

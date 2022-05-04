@@ -9,6 +9,8 @@ const getRole = async (setRoleData) => {
   } catch (err) {
     console.log(err);
   }
+
+  // return axios.get(ROLE_API + 'roles').then(res => res.data)
 };
 
 // Get all Permission from API
@@ -19,6 +21,8 @@ const getPers = async (setPerDatas) => {
   } catch (err) {
     console.log(err);
   }
+
+  // return axios.get(ROLE_API + 'permission').then((res) => res.data)
 };
 
 // Add New Role func
@@ -77,7 +81,7 @@ const createPer = async (name, toast, setPerDatas, setRoleID) => {
 
 // Delete Role func
 const deleteRoler = (id, toast, setRoleData) => {
-  axios
+  return axios
     .delete(`${ROLE_API}roles/${id}`)
     .then(() => {
       getRole(setRoleData);
@@ -91,7 +95,7 @@ const deleteRoler = (id, toast, setRoleData) => {
 
 // Delete a Permission
 const deletePermission = (id, toast, setPerDatas) => {
-  axios
+  return axios
     .delete(`${ROLE_API}permission/${id}`)
     .then(() => {
       getPers(setPerDatas);

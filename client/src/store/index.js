@@ -17,7 +17,6 @@ import loginSlice from './loginSlice.js';
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['login'],
 };
 const reducer = combineReducers({
   login: loginSlice.reducer,
