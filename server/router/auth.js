@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 // @router POST api/auth/register
 // @description register user
 // @access Public
+
 router.post('/register', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
@@ -30,7 +31,8 @@ router.post('/register', async (req, res) => {
         // Return token
         const accessToken = jwt.sign(
           { userID: newUser._id },
-          process.env.ACCESS_TOKEN
+          process.env.ACCESS_TOKEN,
+          { expiresIn: '30s' }
         );
         res.json({
           success: true,
@@ -76,7 +78,8 @@ router.post('/login', async (req, res) => {
           // Return token
           const accessToken = jwt.sign(
             { userID: existingUser._id },
-            process.env.ACCESS_TOKEN
+            process.env.ACCESS_TOKEN,
+            { expiresIn: '30s' }
           );
           res.json({
             success: true,
