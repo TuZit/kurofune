@@ -13,10 +13,7 @@ import DefaultLayout from './pages/DefaultLayout.jsx';
 
 function App() {
   const isSuccess = JSON.parse(localStorage.getItem('login'));
-
-  if (isSuccess) {
-    console.log('success:', isSuccess);
-  }
+  const isLogged = useSelector((state) => state.login.isLogged);
 
   return (
     <div className='app'>
@@ -24,7 +21,8 @@ function App() {
         <Route
           path='/'
           element={
-            isSuccess && isSuccess.success === true ? (
+            // isSuccess && isSuccess.success === true
+            isSuccess?.success === true || isLogged === true ? (
               <RoleControl />
             ) : (
               <Navigate to='auth/login' />

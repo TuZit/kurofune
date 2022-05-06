@@ -6,8 +6,8 @@ import './style.scss';
 
 function AuthLayout() {
   return (
-    <div className='auth-layout' limit='1'>
-      <ToastContainer theme='colored' />
+    <div className='auth-layout'>
+      <ToastContainer theme='colored' limit={1} />
       <div className='layout-left'>
         <img
           src='https://pharma.its-globaltek.com/wp-content/themes/pharmacy/assets/imgs/bg_login-register.jpg'

@@ -22,18 +22,12 @@ function LoginForm({ setRedirectPart }) {
         password,
       });
 
-      // localStorage.setItem(
-      //   'accessToken',
-      //   JSON.stringify({
-      //     accessToken: res.data.accessToken,
-      //   })
-      // );
-
       localStorage.setItem('login', JSON.stringify(res.data));
       dispatch(loginActions.login());
       navigate('/');
     } catch (err) {
       toast.error(err.response.data.message);
+      console.log(err.response);
     }
   };
 

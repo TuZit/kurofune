@@ -32,12 +32,13 @@ router.post('/register', async (req, res) => {
         const accessToken = jwt.sign(
           { userID: newUser._id },
           process.env.ACCESS_TOKEN,
-          { expiresIn: '30s' }
+          { expiresIn: '120s' }
         );
         res.json({
           success: true,
           message: 'User created successfully',
           accessToken,
+          expiresIn: 30,
         });
       }
     } catch (error) {
@@ -79,12 +80,13 @@ router.post('/login', async (req, res) => {
           const accessToken = jwt.sign(
             { userID: existingUser._id },
             process.env.ACCESS_TOKEN,
-            { expiresIn: '30s' }
+            { expiresIn: '10s' }
           );
           res.json({
             success: true,
             message: 'User login successfully',
             accessToken,
+            expiresIn: 30,
           });
         }
       }
