@@ -13,17 +13,19 @@ import {
 import storage from 'redux-persist/lib/storage';
 // import { setupListeners } from '@reduxjs/toolkit/query';
 
-import { authApi } from '../services/authApi.js';
 import authSlice from './authSlice.js';
+import { authApi } from '../services/authApi.js';
+import { roleApi } from '../services/roleApi.js';
 
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['auth'],
+  // whitelist: ['auth'],
 };
 const reducer = combineReducers({
   auth: authSlice.reducer,
   [authApi.reducerPath]: authApi.reducer,
+  [roleApi.reducerPath]: roleApi.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, reducer);
@@ -36,7 +38,7 @@ const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(authApi.middleware),
+    }).concat(authApi.middleware, roleApi.middleware),
 });
 
 export const persistor = persistStore(store);

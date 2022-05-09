@@ -12,7 +12,7 @@ import {
 } from 'react-bootstrap';
 import ReactLoading from 'react-loading';
 import { useDispatch, useSelector } from 'react-redux';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import roleService from '../services/role.service.js';
 import PerItem from './PerItem.jsx';
@@ -62,8 +62,8 @@ function RoleControl() {
       );
       if (decodedToken.exp * 1000 < currentDate.getTime()) {
         dispatch(logout());
-        navigate('/auth/login');
         localStorage.clear();
+        navigate('/auth/login');
         toast.warning('Token is Expired. Please Login Again !');
         toast.clearWaitingQueue();
       }

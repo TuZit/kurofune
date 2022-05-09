@@ -1,8 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// const user = JSON.parse(localStorage.getItem('user'));
-
 export const register = createAsyncThunk(
   'auth/register',
   async ({ username, password }, thunkAPI) => {
@@ -14,7 +12,7 @@ export const register = createAsyncThunk(
       return response.data;
     } catch (err) {
       console.log(err);
-      return thunkAPI.rejectWithValue();
+      return thunkAPI.rejectWithValue(err.response.data.message);
     }
   }
 );
@@ -29,8 +27,7 @@ export const login = createAsyncThunk(
       });
       return res.data;
     } catch (err) {
-      console.log(err);
-      return thunkAPI.rejectWithValue();
+      return thunkAPI.rejectWithValue(err.response.data.message);
     }
   }
 );
@@ -38,10 +35,6 @@ export const login = createAsyncThunk(
 export const logout = createAsyncThunk('auth/logout', () => {
   localStorage.clear();
 });
-
-// const initialState = user
-//   ? { isLoggedIn: true, user }
-//   : { isLoggedIn: false, user: null };
 
 const authSlice = createSlice({
   name: 'auth',
