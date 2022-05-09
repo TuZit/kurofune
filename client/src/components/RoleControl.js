@@ -15,8 +15,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import roleService from '../services/role.service.js';
-import { loginActions } from '../store/loginSlice.js';
 import PerItem from './PerItem.jsx';
+import { logout } from '../store/authSlice.js';
 
 function RoleControl() {
   const dispatch = useDispatch();
@@ -61,7 +61,7 @@ function RoleControl() {
         JSON.parse(localStorage.getItem('login')).accessToken
       );
       if (decodedToken.exp * 1000 < currentDate.getTime()) {
-        dispatch(loginActions.logout());
+        dispatch(logout());
         navigate('/auth/login');
         localStorage.clear();
         toast.warning('Token is Expired. Please Login Again !');
@@ -224,9 +224,8 @@ function RoleControl() {
                 <Button
                   variant='outline-success'
                   onClick={() => {
-                    dispatch(loginActions.logout());
+                    dispatch(logout());
                     navigate('/auth/login');
-                    // localStorage.setItem('isLogged', false);
                   }}
                 >
                   Log Out

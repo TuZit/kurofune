@@ -1,40 +1,78 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
-import './style.scss';
-import { loginActions } from '../../../store/loginSlice.js';
+import { useLoginUserMutation } from '../../../services/authApi';
 
-function LoginForm({ setRedirectPart }) {
+import './style.scss';
+import { login } from '../../../store/authSlice.js';
+
+function LoginForm() {
   const [username, setUserName] = useState('');
   const [password, setPassword] = useState('');
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Login function
-  const login = async () => {
-    try {
-      const res = await axios.post('http://localhost:5000/api/v1/auth/login', {
-        username,
-        password,
-      });
+  // const demp = useRegisterUserMutation();
+  // console.log(demp);
 
-      localStorage.setItem('login', JSON.stringify(res.data));
-      dispatch(loginActions.login());
-      navigate('/');
-    } catch (err) {
-      toast.error(err.response.data.message);
-      console.log(err.response);
-    }
-  };
+  // Login function
+  // const login = async () => {
+  //   try {
+  //     const res = await axios.post('http://localhost:5000/api/v1/auth/login', {
+  //       username,
+  //       password,
+  //     });
+
+  //     localStorage.setItem('login', JSON.stringify(res.data));
+  //     dispatch(loginActions.login());
+  //     navigate('/');
+  //   } catch (err) {
+  //     toast.error(err.response.data.message);
+  //     console.log(err.response);
+  //   }
+  // };
+
+  //  Login using RTK Query
+  // const [loginUser, { data, isLoading, isSuccess, isError, error }] =
+  //   useLoginUserMutation();
+  // useEffect(() => {
+  //   if (isSuccess) {
+  //     localStorage.setItem('login', JSON.stringify(data));
+  //     dispatch(loginActions.login());
+  //     navigate('/');
+  //   }
+
+  //   if (isError) {
+  //     console.log(error);
+  //   }
+  // }, [data, isSuccess]);
+
+  // if (isLoading) {
+  //   return <h2>Loading...</h2>;
+  // }
 
   // Submit func
   const handleSubmit = (e) => {
     e.preventDefault();
-    login();
+    dispatch(login({ username, password }))
+      .unwrap()
+      .then((res) => {
+        localStorage.setItem('login', JSON.stringify(res));
+        navigate('/');
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+    // login();
+    // loginUser({
+    //   username,
+    //   password,
+    // });
   };
 
   return (

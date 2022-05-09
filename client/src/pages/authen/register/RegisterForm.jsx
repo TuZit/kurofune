@@ -6,9 +6,9 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
-import { loginActions } from '../../../store/loginSlice.js';
 
 import './register.scss';
+import { register } from '../../../store/authSlice.js';
 
 function RegisterForm({ setRedirectPart }) {
   const navigate = useNavigate();
@@ -46,34 +46,47 @@ function RegisterForm({ setRedirectPart }) {
       acceptTerms: Yup.bool().oneOf([true], 'Accept Terms is required'),
     }),
     onSubmit: (values) => {
-      register(values);
+      const newValue = {
+        username: values.name,
+        password: values.password,
+      };
+      dispatch(register(newValue))
+        .unwrap()
+        .then((res) => {
+          localStorage.setItem('login', JSON.stringify(res));
+          navigate('/');
+          toast.success('Đăng ký thành công !');
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
   });
 
   // Register Func
-  const register = async (values) => {
-    const newValue = {
-      username: values.name,
-      password: values.password,
-    };
-    try {
-      const res = await axios.post(
-        'http://localhost:5000/api/v1/auth/register',
-        newValue
-      );
-      localStorage.setItem(
-        'login',
-        JSON.stringify({
-          accessToken: res.data.accessToken,
-        })
-      );
-      dispatch(loginActions.login());
-      navigate('/');
-      toast.success('Đăng ký thành công !');
-    } catch (err) {
-      toast.error(err.response.data.message);
-    }
-  };
+  // const register = async (values) => {
+  //   const newValue = {
+  //     username: values.name,
+  //     password: values.password,
+  //   };
+  //   try {
+  //     const res = await axios.post(
+  //       'http://localhost:5000/api/v1/auth/register',
+  //       newValue
+  //     );
+  //     localStorage.setItem(
+  //       'login',
+  //       JSON.stringify({
+  //         accessToken: res.data.accessToken,
+  //       })
+  //     );
+  //     dispatch(login(newValue));
+  //     navigate('/');
+  //     toast.success('Đăng ký thành công !');
+  //   } catch (err) {
+  //     toast.error(err.response.data.message);
+  //   }
+  // };
 
   return (
     <>

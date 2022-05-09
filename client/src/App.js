@@ -9,11 +9,9 @@ import LoginForm from './pages/authen/login/LoginForm.jsx';
 import RegisterForm from './pages/authen/register/RegisterForm.jsx';
 import PostDashboard from './pages/post/PostDashboard.jsx';
 import AuthLayout from './pages/authen/authLayout/index.js';
-import DefaultLayout from './pages/DefaultLayout.jsx';
 
 function App() {
-  const isSuccess = JSON.parse(localStorage.getItem('login'));
-  const isLogged = useSelector((state) => state.login.isLogged);
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
 
   return (
     <div className='app'>
@@ -21,12 +19,7 @@ function App() {
         <Route
           path='/'
           element={
-            // isSuccess && isSuccess.success === true
-            isSuccess?.success === true || isLogged === true ? (
-              <RoleControl />
-            ) : (
-              <Navigate to='auth/login' />
-            )
+            isLoggedIn === true ? <RoleControl /> : <Navigate to='auth/login' />
           }
         />
         <Route path='/auth' element={<AuthLayout />}>
