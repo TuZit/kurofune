@@ -17,7 +17,7 @@ export const perApi = createApi({
       query: (role) => ({
         url: '/permission',
         method: 'POST',
-        body: role,
+        body: { name: role },
       }),
       invalidatesTags: ['Per'],
     }),

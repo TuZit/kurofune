@@ -17,7 +17,11 @@ import { toast, ToastContainer } from 'react-toastify';
 import roleService from '../services/role.service.js';
 import PerItem from './PerItem.jsx';
 import { logout } from '../store/authSlice.js';
-import { useGetRoleQuery } from '../services/roleApi.js';
+import {
+  useGetRoleQuery,
+  useAddRoleMutation,
+  useDeleteRoleByIDMutation,
+} from '../services/roleApi.js';
 import { useGetPerQuery } from '../services/perApi.js';
 import { useGetPostQuery } from '../services/postApi.js';
 
@@ -25,9 +29,13 @@ function RoleControl() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const getPerQuery = useGetPerQuery();
   const getRoleQuery = useGetRoleQuery();
-  const getPostQuery = useGetPostQuery();
+  const [addRole, addRoleMutation] = useAddRoleMutation();
+  const [deleteRoleByID] = useDeleteRoleByIDMutation();
+  // console.log(addRoleMutation);
+
+  const getPerQuery = useGetPerQuery();
+  // const getPostQuery = useGetPostQuery();
 
   const [showAddRole, setShowAddRole] = useState(false);
   const [showMofifyRole, setShowModifyRole] = useState(false);
@@ -58,6 +66,88 @@ function RoleControl() {
 
   // Check Authorization
   const [isAuthorization, setIsAuthorization] = useState(false);
+
+  // Add New Role func
+  const handleAddNewRole = async () => {
+    const roleNameList = roleData.map((role) => role.name);
+
+    if (newRole.trim() === '') {
+      toast.warning('This filed id required!');
+      return;
+    }
+
+    if (roleNameList.includes(newRole)) {
+      toast.warning('Role Name Already Exists!');
+      return;
+    } else {
+      // roleService.createRole(
+      //   newRole,
+      //   toast,
+      //   setRoleData,
+      //   setSelectedRole,
+      //   getPerQuery.refetch
+      // );
+
+      await addRole(newRole);
+      getRoleQuery.refetch();
+      setSelectedRole(addRoleMutation.data);
+
+      setShowAddRole(false);
+    }
+  };
+
+  // Add new permission to current role
+  const handleAddNewPer = () => {
+    if (newPer.trim() === '') {
+      toast.warning('This filed id required!');
+      return;
+    }
+    roleService.createPer(newPer, toast, setPerDatas, setRoleID);
+    setShowAddPer(false);
+  };
+
+  // Delete Role func
+  const handleDeleteRole = async () => {
+    // roleService.deleteRoler(roleID, toast, setRoleData);
+    try {
+      await deleteRoleByID(roleID);
+      toast.success('Deleted Permission!');
+      getRoleQuery.refetch();
+      setDeleteRole(false);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // Delete a Permission
+  const handleDeletePermission = () => {
+    roleService.deletePermission(perID, toast, setPerDatas);
+    setShowDelete(false);
+  };
+
+  // Modify Permission Name
+  const handleModifyPerName = () => {
+    roleService.modifyPerName(perID, modidyPer, toast, setPerDatas);
+    setShowUpdatePer(false);
+  };
+
+  // Checkbox checked
+  const checkPermission = (perCheck) => {
+    return selectedRole?.perIDList.find((item) => item === perCheck)
+      ? true
+      : false;
+  };
+
+  // Save Permission
+  const handleSavePer = () => {
+    roleService.savePerList(
+      roleID,
+      selectedRole?.perIDList,
+      toast,
+      setPerDatas,
+      setRoleData
+    );
+  };
 
   // Config Header Authorization before doing request
   const interceptorJWT = axios.create();
@@ -109,76 +199,6 @@ function RoleControl() {
     getRoleQuery.refetch();
   }, [roleID]);
 
-  // Add New Role func
-  const handleAddNewRole = () => {
-    const roleNameList = roleData.map((role) => role.name);
-
-    if (newRole.trim() === '') {
-      toast.warning('This filed id required!');
-      return;
-    }
-
-    if (roleNameList.includes(newRole)) {
-      toast.warning('Role Name Already Exists!');
-      return;
-    } else {
-      roleService.createRole(
-        newRole,
-        toast,
-        setRoleData,
-        setSelectedRole,
-        getPerQuery.refetch
-      );
-      setShowAddRole(false);
-    }
-  };
-
-  // Add new permission to current role
-  const handleAddNewPer = () => {
-    if (newPer.trim() === '') {
-      toast.warning('This filed id required!');
-      return;
-    }
-    roleService.createPer(newPer, toast, setPerDatas, setRoleID);
-    setShowAddPer(false);
-  };
-
-  // Delete Role func
-  const handleDeleteRole = () => {
-    roleService.deleteRoler(roleID, toast, setRoleData);
-    setDeleteRole(false);
-  };
-
-  // Delete a Permission
-  const handleDeletePermission = () => {
-    roleService.deletePermission(perID, toast, setPerDatas);
-    setShowDelete(false);
-  };
-
-  // Modify Permission Name
-  const handleModifyPerName = () => {
-    roleService.modifyPerName(perID, modidyPer, toast, setPerDatas);
-    setShowUpdatePer(false);
-  };
-
-  // Checkbox checked
-  const checkPermission = (perCheck) => {
-    return selectedRole?.perIDList.find((item) => item === perCheck)
-      ? true
-      : false;
-  };
-
-  // Save Permission
-  const handleSavePer = () => {
-    roleService.savePerList(
-      roleID,
-      selectedRole?.perIDList,
-      toast,
-      setPerDatas,
-      setRoleData
-    );
-  };
-
   useEffect(() => {
     if (getRoleQuery.isSuccess === true) {
       setRoleData(getRoleQuery.data);
@@ -186,7 +206,14 @@ function RoleControl() {
     if (getPerQuery.isSuccess === true) {
       setPerDatas(getPerQuery.data);
     }
-  }, [getRoleQuery.isSuccess, getPerQuery.isSuccess]);
+    if (addRoleMutation.isSuccess === true) {
+      setSelectedRole(addRoleMutation.data);
+    }
+  }, [
+    getRoleQuery.isSuccess,
+    getPerQuery.isSuccess,
+    addRoleMutation.isSuccess,
+  ]);
 
   return (
     <div className='role-container'>
@@ -354,9 +381,6 @@ function RoleControl() {
                   type='text'
                   autoFocus
                   onChange={(e) => {
-                    // if (e.target.value.trim() === '') {
-                    //   toast.warning('This field is required');
-                    // }
                     setNewRole(e.target.value);
                   }}
                 />
