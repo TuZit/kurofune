@@ -17,10 +17,17 @@ import { toast, ToastContainer } from 'react-toastify';
 import roleService from '../services/role.service.js';
 import PerItem from './PerItem.jsx';
 import { logout } from '../store/authSlice.js';
+import { useGetRoleQuery } from '../services/roleApi.js';
+import { useGetPerQuery } from '../services/perApi.js';
+import { useGetPostQuery } from '../services/postApi.js';
 
 function RoleControl() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const getPerQuery = useGetPerQuery();
+  const getRoleQuery = useGetRoleQuery();
+  const getPostQuery = useGetPostQuery();
 
   const [showAddRole, setShowAddRole] = useState(false);
   const [showMofifyRole, setShowModifyRole] = useState(false);
@@ -94,11 +101,12 @@ function RoleControl() {
 
   // Get all roles, permissions datas when mount
   useEffect(() => {
-    let isSubscribed = true;
-    roleService.getRole(setRoleData);
-    roleService.getPers(setPerDatas);
+    // sửa đc 1 chỗ với useEffect cuối
+    // roleService.getRole(setRoleData);
+    // roleService.getPers(setPerDatas);
 
-    return () => (isSubscribed = false);
+    getPerQuery.refetch();
+    getRoleQuery.refetch();
   }, [roleID]);
 
   // Add New Role func
@@ -114,7 +122,13 @@ function RoleControl() {
       toast.warning('Role Name Already Exists!');
       return;
     } else {
-      roleService.createRole(newRole, toast, setRoleData, setSelectedRole);
+      roleService.createRole(
+        newRole,
+        toast,
+        setRoleData,
+        setSelectedRole,
+        getPerQuery.refetch
+      );
       setShowAddRole(false);
     }
   };
@@ -164,6 +178,15 @@ function RoleControl() {
       setRoleData
     );
   };
+
+  useEffect(() => {
+    if (getRoleQuery.isSuccess === true) {
+      setRoleData(getRoleQuery.data);
+    }
+    if (getPerQuery.isSuccess === true) {
+      setPerDatas(getPerQuery.data);
+    }
+  }, [getRoleQuery.isSuccess, getPerQuery.isSuccess]);
 
   return (
     <div className='role-container'>

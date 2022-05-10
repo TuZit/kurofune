@@ -1,5 +1,6 @@
 import { combineReducers } from 'redux';
 import { configureStore } from '@reduxjs/toolkit';
+import { setupListeners } from '@reduxjs/toolkit/query';
 import {
   persistStore,
   persistReducer,
@@ -11,26 +12,29 @@ import {
   REGISTER,
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-// import { setupListeners } from '@reduxjs/toolkit/query';
 
 import authSlice from './authSlice.js';
 import { authApi } from '../services/authApi.js';
 import { roleApi } from '../services/roleApi.js';
+import { postApi } from '../services/postApi.js';
+import { perApi } from '../services/perApi.js';
 
 const persistConfig = {
   key: 'root',
   storage,
-  // whitelist: ['auth'],
+  whitelist: ['auth'],
 };
 const reducer = combineReducers({
   auth: authSlice.reducer,
   [authApi.reducerPath]: authApi.reducer,
   [roleApi.reducerPath]: roleApi.reducer,
+  [postApi.reducerPath]: postApi.reducer,
+  [perApi.reducerPath]: perApi.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, reducer);
 
-const store = configureStore({
+export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -38,9 +42,14 @@ const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(authApi.middleware, roleApi.middleware),
+    }).concat(
+      authApi.middleware,
+      perApi.middleware,
+      postApi.middleware,
+      roleApi.middleware
+    ),
 });
 
 export const persistor = persistStore(store);
 
-export default store;
+setupListeners(store.dispatch);

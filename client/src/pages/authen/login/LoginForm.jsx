@@ -16,44 +16,23 @@ function LoginForm() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // const demp = useRegisterUserMutation();
-  // console.log(demp);
-
-  // Login function
-  // const login = async () => {
-  //   try {
-  //     const res = await axios.post('http://localhost:5000/api/v1/auth/login', {
-  //       username,
-  //       password,
-  //     });
-
-  //     localStorage.setItem('login', JSON.stringify(res.data));
-  //     dispatch(loginActions.login());
-  //     navigate('/');
-  //   } catch (err) {
-  //     toast.error(err.response.data.message);
-  //     console.log(err.response);
-  //   }
-  // };
-
   //  Login using RTK Query
-  // const [loginUser, { data, isLoading, isSuccess, isError, error }] =
-  //   useLoginUserMutation();
-  // useEffect(() => {
-  //   if (isSuccess) {
-  //     localStorage.setItem('login', JSON.stringify(data));
-  //     dispatch(loginActions.login());
-  //     navigate('/');
-  //   }
+  const [loginUser, { data, isLoading, isSuccess, isError, error }] =
+    useLoginUserMutation();
+  useEffect(() => {
+    if (isSuccess) {
+      localStorage.setItem('login', JSON.stringify(data));
+      navigate('/');
+    }
 
-  //   if (isError) {
-  //     console.log(error);
-  //   }
-  // }, [data, isSuccess]);
+    if (isError) {
+      console.log(error);
+    }
+  }, [data, isSuccess]);
 
-  // if (isLoading) {
-  //   return <h2>Loading...</h2>;
-  // }
+  if (isLoading) {
+    return <h2>Loading...</h2>;
+  }
 
   // Submit func
   const handleSubmit = (e) => {

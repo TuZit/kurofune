@@ -12,6 +12,8 @@ import AuthLayout from './pages/authen/authLayout/index.js';
 
 function App() {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const isSuccess = JSON.parse(localStorage.getItem('login'));
+  // console.log(isSuccess);
 
   return (
     <div className='app'>

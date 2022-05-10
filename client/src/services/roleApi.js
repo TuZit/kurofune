@@ -2,31 +2,20 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const roleApi = createApi({
   reducerPath: 'roleApi',
-
-  // baseQuery: fetchBaseQuery({
-  //   baseUrl,
-  //   prepareHeaders: (headers, { getState }) => {
-  //     const token = localStorage.getItem('currentUser')
-  //       ? JSON.parse(localStorage.getItem('currentUser')).access_token
-  //       : null;
-  //     if (token) {
-  //       headers.set('authorization', `Bearer ${token}`);
-  //     }
-  //     return headers;
-  //   },
-  // }),
-
-  baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:5000/api/v1/post' }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: 'https://62642ce498095dcbf92c71ce.mockapi.io/api/',
+  }),
   tagTypes: ['Role'],
+
   endpoints: (builder) => ({
-    getAllRoles: builder.query({
-      query: () => `/all`,
+    getRole: builder.query({
+      query: () => '/roles',
       providesTags: ['Role'],
     }),
 
     addRole: builder.mutation({
       query: (role) => ({
-        url: '/create',
+        url: '/roles',
         method: 'POST',
         body: role,
       }),
@@ -35,7 +24,7 @@ export const roleApi = createApi({
 
     updateRole: builder.mutation({
       query: (role, id) => ({
-        url: `/update/${id}`,
+        url: `/roles/${id}`,
         method: 'PUT',
         body: role,
       }),
@@ -44,7 +33,7 @@ export const roleApi = createApi({
 
     deleteRole: builder.mutation({
       query: (id) => ({
-        url: `/delete/${id}`,
+        url: `/roles/${id}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['Role'],
@@ -53,7 +42,7 @@ export const roleApi = createApi({
 });
 
 export const {
-  useGetAllRolesQuery,
+  useGetRoleQuery,
   useAddRoleMutation,
   useUpdateRoleMutation,
   useDeleteRoleMutation,

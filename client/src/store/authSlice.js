@@ -40,25 +40,26 @@ const authSlice = createSlice({
   name: 'auth',
   initialState: {
     isLoggedIn: false,
+    accessToken: null,
   },
   extraReducers: {
     [register.fulfilled]: (state, action) => {
       state.isLoggedIn = true;
+      state.accessToken = action.payload.accessToken;
     },
     [register.rejected]: (state, action) => {
       state.isLoggedIn = false;
     },
     [login.fulfilled]: (state, action) => {
       state.isLoggedIn = true;
-      state.user = action.payload.user;
+      state.accessToken = action.payload.accessToken;
     },
     [login.rejected]: (state, action) => {
       state.isLoggedIn = false;
-      state.user = null;
     },
     [logout.fulfilled]: (state, action) => {
       state.isLoggedIn = false;
-      state.user = null;
+      state.accessToken = '';
     },
   },
 });

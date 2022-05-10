@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import postService from '../../services/post.service.js';
+import { useGetRoleQuery } from '../../services/roleApi.js';
 
 function PostDashboard() {
   const [post, setPost] = useState();
@@ -10,9 +11,9 @@ function PostDashboard() {
   const [url, setUrl] = useState('');
   const [status, setStatus] = useState('');
   const [ID, setPostID] = useState();
-  if (post) {
-    console.log(post.post);
-  }
+
+  const { data } = useGetRoleQuery();
+  console.log(data);
 
   // Get access Token from LocalStorage
   const accessToken = JSON.parse(localStorage.getItem('login')).accessToken;
@@ -76,51 +77,62 @@ function PostDashboard() {
   }, []);
 
   return (
-    <div>
-      <ToastContainer theme='colored' limit={1} />
-      <h1>PostDashboard</h1>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          createPost();
-        }}
-      >
-        <div>
-          <label>Title</label>
-          <input type='text' onChange={(e) => setTitle(e.target.value)} />
-        </div>
-
-        <div>
-          <label>Description</label>
-          <input type='text' onChange={(e) => setDescription(e.target.value)} />
-        </div>
-
-        <div>
-          <label>Url</label>
-          <input type='text' onChange={(e) => setUrl(e.target.value)} />
-        </div>
-
-        <div>
-          <label>Status</label>
-          <input type='text' onChange={(e) => setStatus(e.target.value)} />
-        </div>
-
-        <button type='submit'>Send</button>
-      </form>
-
-      <div style={{ marginTop: '40px' }}>
-        <label>Nhập số ID của Post muốn xoá</label>
-        <br />
-        <input
-          type='text'
-          onChange={(e) => {
-            setPostID(e.target.value);
+    <>
+      <div>
+        <ToastContainer theme='colored' limit={1} />
+        <h1>PostDashboard</h1>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            createPost();
           }}
-        />
-        {/* <br /> */}
-        <button onClick={deletePost}>DELETE POST</button>
+        >
+          <div>
+            <label>Title</label>
+            <input type='text' onChange={(e) => setTitle(e.target.value)} />
+          </div>
+
+          <div>
+            <label>Description</label>
+            <input
+              type='text'
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label>Url</label>
+            <input type='text' onChange={(e) => setUrl(e.target.value)} />
+          </div>
+
+          <div>
+            <label>Status</label>
+            <input type='text' onChange={(e) => setStatus(e.target.value)} />
+          </div>
+
+          <button type='submit'>Send</button>
+        </form>
+
+        <div style={{ marginTop: '40px' }}>
+          <label>Nhập số ID của Post muốn xoá</label>
+          <br />
+          <input
+            type='text'
+            onChange={(e) => {
+              setPostID(e.target.value);
+            }}
+          />
+          {/* <br /> */}
+          <button onClick={deletePost}>DELETE POST</button>
+        </div>
       </div>
-    </div>
+
+      <div>
+        {data.map((role, i) => (
+          <p>{role.name}</p>
+        ))}
+      </div>
+    </>
   );
 }
 

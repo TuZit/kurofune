@@ -26,13 +26,20 @@ const getPers = async (setPerDatas) => {
 };
 
 // Add New Role func
-const createRole = async (role, toast, setRoleData, setSelectedRole) => {
+const createRole = async (
+  role,
+  toast,
+  setRoleData,
+  setSelectedRole,
+  refetch
+) => {
   try {
     const res = await axios.post(ROLE_API + 'roles', {
       name: role,
     });
     setSelectedRole(res.data);
     getRole(setRoleData);
+    refetch();
     toast.success('Successfully Added Role!');
   } catch (err) {
     console.log(err);
