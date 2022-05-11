@@ -38,6 +38,18 @@ export const roleApi = createApi({
       }),
       invalidatesTags: ['Role'],
     }),
+
+    saveAllPer: builder.mutation({
+      query: (data) => {
+        const { id, ...body } = data;
+        return {
+          url: `/roles/${id}`,
+          method: 'PUT',
+          body,
+        };
+      },
+      invalidatesTags: ['Role'],
+    }),
   }),
 });
 
@@ -46,4 +58,5 @@ export const {
   useAddRoleMutation,
   useUpdateRoleMutation,
   useDeleteRoleByIDMutation,
+  useSaveAllPerMutation,
 } = roleApi;

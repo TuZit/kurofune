@@ -14,20 +14,23 @@ export const perApi = createApi({
     }),
 
     addPer: builder.mutation({
-      query: (role) => ({
+      query: (per) => ({
         url: '/permission',
         method: 'POST',
-        body: { name: role },
+        body: { name: per },
       }),
       invalidatesTags: ['Per'],
     }),
 
     updatePer: builder.mutation({
-      query: (role, id) => ({
-        url: `/permission/${id}`,
-        method: 'PUT',
-        body: role,
-      }),
+      query: (data) => {
+        const { id, ...body } = data;
+        return {
+          url: `/permission/${id}`,
+          method: 'PUT',
+          body,
+        };
+      },
       invalidatesTags: ['Per'],
     }),
 

@@ -11,32 +11,42 @@ import {
   Navbar,
 } from 'react-bootstrap';
 import ReactLoading from 'react-loading';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
-import roleService from '../services/role.service.js';
+// import roleService from '../services/role.service.js';
 import PerItem from './PerItem.jsx';
 import { logout } from '../store/authSlice.js';
 import {
   useGetRoleQuery,
   useAddRoleMutation,
   useDeleteRoleByIDMutation,
+  useSaveAllPerMutation,
 } from '../services/roleApi.js';
-import { useGetPerQuery } from '../services/perApi.js';
-import { useGetPostQuery } from '../services/postApi.js';
+import {
+  useGetPerQuery,
+  useAddPerMutation,
+  useUpdatePerMutation,
+  useDeletePerMutation,
+} from '../services/perApi.js';
 
 function RoleControl() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // RTK role API
   const getRoleQuery = useGetRoleQuery({ refetchOnMountOrArgChange: true });
   const [addRole, addRoleMutation] = useAddRoleMutation();
   const [deleteRoleByID] = useDeleteRoleByIDMutation();
-  // console.log(addRoleMutation);
 
-  const getPerQuery = useGetPerQuery();
-  // const getPostQuery = useGetPostQuery();
+  // RTK Permission API
+  const getPerQuery = useGetPerQuery({ refetchOnMountOrArgChange: true });
+  const [addPer, addPerMutation] = useAddPerMutation();
+  const [deletePer] = useDeletePerMutation();
+  const [updatePer] = useUpdatePerMutation();
+  const [saveAllPer] = useSaveAllPerMutation();
 
+  // Show/Hide Modal dialog State
   const [showAddRole, setShowAddRole] = useState(false);
   const [showMofifyRole, setShowModifyRole] = useState(false);
   const [deleteRole, setDeleteRole] = useState(false);
@@ -58,7 +68,8 @@ function RoleControl() {
   // Current Role ID
   const [roleID, setRoleID] = useState('');
   // ID of permission want to delete
-  const [perID, setPerID] = useState('');
+  const [perID, setPerID] = useState();
+
   // New Permission's Name is Modified
   const [modidyPer, setModifyPerName] = useState('');
   // Selected Role datas
@@ -67,7 +78,7 @@ function RoleControl() {
   // Check Authorization
   const [isAuthorization, setIsAuthorization] = useState(false);
 
-  // Add New Role func
+  // Add New Role func => RTK
   const handleAddNewRole = async () => {
     const roleNameList = roleData.map((role) => role.name);
 
@@ -92,27 +103,37 @@ function RoleControl() {
       await addRole(newRole);
       getRoleQuery.refetch();
       setSelectedRole(addRoleMutation.data);
-
+      toast.success('Successfully Added Role!');
       setShowAddRole(false);
     }
   };
 
-  // Add new permission to current role
-  const handleAddNewPer = () => {
+  // Add new permission to current role => RTK
+  const handleAddNewPer = async () => {
     if (newPer.trim() === '') {
       toast.warning('This filed id required!');
       return;
     }
-    roleService.createPer(newPer, toast, setPerDatas, setRoleID);
-    setShowAddPer(false);
+    // roleService.createPer(newPer, toast, setPerDatas, setRoleID);
+    try {
+      await addPer(newPer);
+
+      getPerQuery.refetch();
+      setPerDatas(getPerQuery.data);
+      setRoleID(addPerMutation.data?.id);
+      toast.success('Successfully Added Permission!');
+      setShowAddPer(false);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
-  // Delete Role func
+  // Delete Role func => RTK
   const handleDeleteRole = async () => {
     // roleService.deleteRoler(roleID, toast, setRoleData);
     try {
       await deleteRoleByID(roleID);
-      toast.success('Deleted Permission!');
+      toast.success('Deleted Role!');
       getRoleQuery.refetch();
       setDeleteRole(false);
     } catch (err) {
@@ -120,16 +141,56 @@ function RoleControl() {
     }
   };
 
-  // Delete a Permission
-  const handleDeletePermission = () => {
-    roleService.deletePermission(perID, toast, setPerDatas);
-    setShowDelete(false);
+  // Delete a Permission => RTK
+  const handleDeletePermission = async () => {
+    // roleService.deletePermission(perID, toast, setPerDatas);
+    try {
+      await deletePer(perID);
+
+      getPerQuery.refetch();
+      setShowDelete(false);
+      toast.success('Deleted Role!');
+    } catch (error) {
+      toast.error('Failed to Delete!');
+      console.log(error);
+    }
   };
 
-  // Modify Permission Name
-  const handleModifyPerName = () => {
-    roleService.modifyPerName(perID, modidyPer, toast, setPerDatas);
-    setShowUpdatePer(false);
+  // Modify Permission Name => RTK
+  const handleModifyPerName = async () => {
+    // roleService.modifyPerName(perID, modidyPer, toast, setPerDatas);
+    try {
+      await updatePer({ id: perID, name: modidyPer });
+      console.log(modidyPer);
+
+      getPerQuery.refetch();
+      setShowUpdatePer(false);
+      // toast.success('Modified Permission');
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // Save Permission
+  const handleSavePer = async () => {
+    // roleService.savePerList(
+    //   roleID,
+    //   selectedRole?.perIDList,
+    //   toast,
+    //   setPerDatas,
+    //   setRoleData
+    // );
+    try {
+      await saveAllPer({
+        id: roleID,
+        perIDList: selectedRole?.perIDList,
+      });
+
+      getRoleQuery.refetch();
+      toast.success('Successfully Save Permission!');
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   // Checkbox checked
@@ -137,17 +198,6 @@ function RoleControl() {
     return selectedRole?.perIDList.find((item) => item === perCheck)
       ? true
       : false;
-  };
-
-  // Save Permission
-  const handleSavePer = () => {
-    roleService.savePerList(
-      roleID,
-      selectedRole?.perIDList,
-      toast,
-      setPerDatas,
-      setRoleData
-    );
   };
 
   // Config Header Authorization before doing request
@@ -192,7 +242,7 @@ function RoleControl() {
 
   // Get all roles, permissions datas when mount
   useEffect(() => {
-    // sửa đc 1 chỗ với useEffect cuối
+    // Thay thế 2 cái service này bởi RTK Query trong useEffect cuối
     // roleService.getRole(setRoleData);
     // roleService.getPers(setPerDatas);
 
@@ -200,6 +250,7 @@ function RoleControl() {
     getRoleQuery.refetch();
   }, [roleID]);
 
+  // RTK Role Management
   useEffect(() => {
     if (getRoleQuery.isSuccess === true) {
       setRoleData(getRoleQuery.data);
@@ -212,12 +263,15 @@ function RoleControl() {
     }
   }, [
     getRoleQuery.isSuccess,
-    getPerQuery.isSuccess,
     getRoleQuery.data,
     getPerQuery.data,
+    getPerQuery.isSuccess,
     addRoleMutation.isSuccess,
     addRoleMutation.data,
   ]);
+
+  // RTK Permission Management
+  useEffect(() => {}, []);
 
   return (
     <div className='role-container'>
@@ -313,7 +367,7 @@ function RoleControl() {
                   selectedRole={selectedRole}
                   checkPermission={checkPermission}
                   roleID={roleID}
-                  getPers={roleService.getPers}
+                  // getPers={roleService.getPers}
                   setSelectedRole={setSelectedRole}
                 />
               );
