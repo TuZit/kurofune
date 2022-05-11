@@ -29,7 +29,7 @@ function RoleControl() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const getRoleQuery = useGetRoleQuery();
+  const getRoleQuery = useGetRoleQuery({ refetchOnMountOrArgChange: true });
   const [addRole, addRoleMutation] = useAddRoleMutation();
   const [deleteRoleByID] = useDeleteRoleByIDMutation();
   // console.log(addRoleMutation);
@@ -88,6 +88,7 @@ function RoleControl() {
       //   getPerQuery.refetch
       // );
 
+      // Using RTK Query
       await addRole(newRole);
       getRoleQuery.refetch();
       setSelectedRole(addRoleMutation.data);
@@ -212,7 +213,10 @@ function RoleControl() {
   }, [
     getRoleQuery.isSuccess,
     getPerQuery.isSuccess,
+    getRoleQuery.data,
+    getPerQuery.data,
     addRoleMutation.isSuccess,
+    addRoleMutation.data,
   ]);
 
   return (
